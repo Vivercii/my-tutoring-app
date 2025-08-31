@@ -28,6 +28,8 @@ model User {
   
   // A User (parent) can have multiple students
   students       Student[]
+  // A User can have multiple activities
+  activities     Activity[]
 }
 
 // Represents an individual student, linked to a User account
@@ -40,4 +42,35 @@ model Student {
   // Relation to the User model (the parent)
   user   User   @relation(fields: [userId], references: [id])
   userId String
+  
+  // A student can have multiple session logs
+  sessionLogs SessionLog[]
+}
+
+// Tracks completed tutoring sessions
+model SessionLog {
+  id        String   @id @default(cuid())
+  subject   String
+  tutor     String
+  date      DateTime
+  duration  Int      // in minutes
+  notes     String?
+  rating    Int?
+  createdAt DateTime @default(now())
+  
+  // Relation to Student
+  student   Student  @relation(fields: [studentId], references: [id])
+  studentId String
+}
+
+// Tracks user activities
+model Activity {
+  id          String   @id @default(cuid())
+  type        String   // e.g., "session_completed", "payment", "message", "session_booked"
+  description String
+  timestamp   DateTime @default(now())
+  userId      String
+  
+  // Relation to User
+  user        User     @relation(fields: [userId], references: [id])
 }
