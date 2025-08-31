@@ -23,7 +23,7 @@ export default function Sidebar({ userName, userEmail }: SidebarProps) {
       <div className="flex min-h-0 flex-1 flex-col bg-gray-900">
         <div className="flex flex-1 flex-col overflow-y-auto">
           {/* Logo and Brand */}
-          <div className="flex items-center justify-between h-16 px-4 bg-gray-900">
+          <div className="flex items-center h-16 px-4 bg-gray-900">
             <div className={`flex items-center ${collapsed ? 'justify-center w-full' : ''}`}>
               <div className="flex-shrink-0 flex items-center">
                 <div className="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -34,14 +34,6 @@ export default function Sidebar({ userName, userEmail }: SidebarProps) {
                 )}
               </div>
             </div>
-            {!collapsed && (
-              <button
-                onClick={() => setCollapsed(!collapsed)}
-                className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
-              >
-                <Icon name="chevronLeft" className="w-5 h-5" />
-              </button>
-            )}
           </div>
 
           {/* User Profile Section */}
@@ -151,17 +143,16 @@ export default function Sidebar({ userName, userEmail }: SidebarProps) {
           </div>
         </div>
 
-        {/* Expand button when collapsed */}
-        {collapsed && (
-          <div className="p-3 border-t border-gray-800">
-            <button
-              onClick={() => setCollapsed(false)}
-              className="w-full flex justify-center p-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
-            >
-              <Icon name="chevronRight" className="w-5 h-5" />
-            </button>
-          </div>
-        )}
+        {/* Expand/Collapse button - always visible */}
+        <div className="p-3 border-t border-gray-800">
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            className="w-full flex justify-center p-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
+            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            <Icon name={collapsed ? "chevronRight" : "chevronLeft"} className="w-5 h-5" />
+          </button>
+        </div>
       </div>
     </div>
   )

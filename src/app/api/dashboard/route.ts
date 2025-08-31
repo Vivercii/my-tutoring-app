@@ -16,17 +16,20 @@ export async function GET(request: NextRequest) {
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
       include: {
-        students: true,
-        activities: {
-          orderBy: { timestamp: 'desc' },
-          take: 10
-        }
+        students: true
       }
     })
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
+
+    // Fetch user activities
+    const activities = await prisma.activity.findMany({
+      where: { userId: user.id },
+      orderBy: { timestamp: 'desc' },
+      take: 10
+    })
 
     // Get session logs for all students
     const sessionLogs = await prisma.sessionLog.findMany({
@@ -57,7 +60,7 @@ export async function GET(request: NextRequest) {
     const upcomingSessions: any[] = []
 
     // Format recent activities
-    const recentActivities = user.activities.map(activity => ({
+    const recentActivities = activities.map(activity => ({
       id: activity.id,
       type: activity.type,
       description: activity.description,
