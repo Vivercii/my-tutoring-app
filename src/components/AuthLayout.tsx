@@ -62,9 +62,9 @@ export default function AuthLayout({
         {/* Overlay - darker, more neutral */}
         <div className="absolute inset-0 bg-black/70"></div>
         
-        {/* Content - properly centered */}
-        <div className="relative z-10 flex items-center justify-center min-h-screen px-8">
-          <div className="max-w-md text-center text-white">
+        {/* Content - centered in the middle of the column */}
+        <div className="relative z-10 flex items-center justify-center min-h-screen">
+          <div className="text-center text-white px-8">
             <div className="mb-8">
               <img 
                 src="/logo.svg" 
