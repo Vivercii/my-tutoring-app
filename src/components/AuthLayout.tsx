@@ -40,7 +40,7 @@ export default function AuthLayout({
       </div>
 
       {/* Right Column - Ken Burns Effect with Images */}
-      <div className="hidden lg:flex lg:flex-1 relative overflow-hidden">
+      <div className="hidden lg:flex lg:flex-1 relative overflow-hidden justify-center items-center">
         {/* Ken Burns Images */}
         {images.map((image, index) => (
           <div
