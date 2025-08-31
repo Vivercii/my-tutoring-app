@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import AuthLayout from '@/components/AuthLayout'
 
+type UserRole = 'PARENT' | 'STUDENT' | 'INSTITUTION'
+
 export default function SignUpPage() {
   const router = useRouter()
   const [formData, setFormData] = useState({
@@ -13,6 +15,7 @@ export default function SignUpPage() {
     password: '',
     confirmPassword: ''
   })
+  const [selectedRole, setSelectedRole] = useState<UserRole>('PARENT')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [agreedToTerms, setAgreedToTerms] = useState(false)
@@ -47,7 +50,8 @@ export default function SignUpPage() {
         body: JSON.stringify({
           name: formData.name,
           email: formData.email,
-          password: formData.password
+          password: formData.password,
+          role: selectedRole
         })
       })
 
@@ -104,6 +108,83 @@ export default function SignUpPage() {
               Sign in
             </Link>
           </p>
+        </div>
+
+        {/* Role Selector */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-3 text-center">
+            I am signing up as a
+          </label>
+          <div className="grid grid-cols-3 gap-3">
+            <button
+              type="button"
+              onClick={() => setSelectedRole('PARENT')}
+              className={`relative px-4 py-3 rounded-lg border-2 transition-all duration-200 ${
+                selectedRole === 'PARENT'
+                  ? 'border-blue-500 bg-blue-50 text-blue-700'
+                  : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <div className="text-center">
+                <div className="text-2xl mb-1">👨‍👩‍👧</div>
+                <div className="font-medium">Parent</div>
+                <div className="text-xs mt-1 text-gray-500">Manage students</div>
+              </div>
+              {selectedRole === 'PARENT' && (
+                <div className="absolute top-2 right-2">
+                  <svg className="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setSelectedRole('STUDENT')}
+              className={`relative px-4 py-3 rounded-lg border-2 transition-all duration-200 ${
+                selectedRole === 'STUDENT'
+                  ? 'border-blue-500 bg-blue-50 text-blue-700'
+                  : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <div className="text-center">
+                <div className="text-2xl mb-1">🎓</div>
+                <div className="font-medium">Student</div>
+                <div className="text-xs mt-1 text-gray-500">Learn & grow</div>
+              </div>
+              {selectedRole === 'STUDENT' && (
+                <div className="absolute top-2 right-2">
+                  <svg className="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setSelectedRole('INSTITUTION')}
+              className={`relative px-4 py-3 rounded-lg border-2 transition-all duration-200 ${
+                selectedRole === 'INSTITUTION'
+                  ? 'border-blue-500 bg-blue-50 text-blue-700'
+                  : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <div className="text-center">
+                <div className="text-2xl mb-1">🏫</div>
+                <div className="font-medium">Institution</div>
+                <div className="text-xs mt-1 text-gray-500">Manage classes</div>
+              </div>
+              {selectedRole === 'INSTITUTION' && (
+                <div className="absolute top-2 right-2">
+                  <svg className="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Error Alert */}

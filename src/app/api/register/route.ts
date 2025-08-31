@@ -1,15 +1,24 @@
 import { NextResponse } from 'next/server'
 import bcrypt from 'bcrypt'
 import { prisma } from '@/lib/prisma'
+import { Role } from '@prisma/client'
 
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { email, name, password } = body
+    const { email, name, password, role } = body
 
     if (!email || !password) {
       return NextResponse.json(
         { error: 'Email and password are required' },
+        { status: 400 }
+      )
+    }
+
+    // Validate role if provided
+    if (role && !Object.values(Role).includes(role)) {
+      return NextResponse.json(
+        { error: 'Invalid role selected' },
         { status: 400 }
       )
     }
@@ -31,7 +40,8 @@ export async function POST(request: Request) {
       data: {
         email,
         name,
-        hashedPassword
+        hashedPassword,
+        role: role || Role.PARENT // Default to PARENT if not specified
       }
     })
 

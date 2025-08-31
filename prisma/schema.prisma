@@ -10,12 +10,19 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  PARENT
+  STUDENT
+  INSTITUTION
+}
+
 // Represents the parent/client account
 model User {
   id             String    @id @default(cuid())
   email          String    @unique
   name           String?
-  hashedPassword String?   // Add this line
+  hashedPassword String?
+  role           Role      @default(PARENT)
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
   
