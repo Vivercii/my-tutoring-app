@@ -1,4 +1,6 @@
-import React from 'react'
+'use client'
+
+import React, { useState, useEffect } from 'react'
 
 interface AuthLayoutProps {
   children: React.ReactNode
@@ -11,6 +13,23 @@ export default function AuthLayout({
   title = "Welcome to UpstartPrep",
   subtitle = "Your journey to academic excellence starts here"
 }: AuthLayoutProps) {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  
+  // Replace these with actual student images
+  const images = [
+    'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1200&h=1600&fit=crop', // Students studying together
+    'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1200&h=1600&fit=crop', // Students collaborating
+    'https://images.unsplash.com/photo-1529470839332-78ad660a6a82?w=1200&h=1600&fit=crop'  // Student smiling with laptop
+  ]
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length)
+    }, 6000) // Change image every 6 seconds
+
+    return () => clearInterval(interval)
+  }, [images.length])
+
   return (
     <div className="min-h-screen flex">
       {/* Left Column - Form */}
@@ -20,9 +39,30 @@ export default function AuthLayout({
         </div>
       </div>
 
-      {/* Right Column - Branding */}
-      <div className="hidden lg:flex lg:flex-1 relative">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900"></div>
+      {/* Right Column - Ken Burns Effect with Images */}
+      <div className="hidden lg:flex lg:flex-1 relative overflow-hidden">
+        {/* Ken Burns Images */}
+        {images.map((image, index) => (
+          <div
+            key={index}
+            className={`absolute inset-0 transition-opacity duration-2000 ${
+              index === currentImageIndex ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
+            <div 
+              className="absolute inset-0 bg-cover bg-center animate-kenburns"
+              style={{
+                backgroundImage: `url(${image})`,
+                animationDelay: `${index * 6}s`
+              }}
+            />
+          </div>
+        ))}
+        
+        {/* Overlay gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-900/90 via-blue-800/85 to-indigo-900/90"></div>
+        
+        {/* Content */}
         <div className="relative z-10 flex flex-col items-center justify-center px-8 text-white">
           <div className="max-w-md text-center">
             <div className="mb-8">
@@ -35,30 +75,64 @@ export default function AuthLayout({
             
             {/* Stats or Features */}
             <div className="grid grid-cols-2 gap-6 mt-12">
-              <div className="text-center">
+              <div className="text-center bg-white/10 backdrop-blur-sm rounded-lg p-4">
                 <div className="text-3xl font-bold mb-2">500+</div>
                 <div className="text-sm text-blue-200">Expert Tutors</div>
               </div>
-              <div className="text-center">
+              <div className="text-center bg-white/10 backdrop-blur-sm rounded-lg p-4">
                 <div className="text-3xl font-bold mb-2">10,000+</div>
                 <div className="text-sm text-blue-200">Happy Students</div>
               </div>
-              <div className="text-center">
+              <div className="text-center bg-white/10 backdrop-blur-sm rounded-lg p-4">
                 <div className="text-3xl font-bold mb-2">4.9/5</div>
                 <div className="text-sm text-blue-200">Average Rating</div>
               </div>
-              <div className="text-center">
+              <div className="text-center bg-white/10 backdrop-blur-sm rounded-lg p-4">
                 <div className="text-3xl font-bold mb-2">24/7</div>
                 <div className="text-sm text-blue-200">Support Available</div>
               </div>
             </div>
 
-            {/* Decorative Elements */}
-            <div className="absolute top-10 right-10 w-64 h-64 bg-blue-500 rounded-full filter blur-3xl opacity-20"></div>
-            <div className="absolute bottom-10 left-10 w-96 h-96 bg-indigo-500 rounded-full filter blur-3xl opacity-20"></div>
+            {/* Image indicator dots */}
+            <div className="flex justify-center space-x-2 mt-8">
+              {images.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentImageIndex(index)}
+                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                    index === currentImageIndex 
+                      ? 'bg-white w-8' 
+                      : 'bg-white/50 hover:bg-white/75'
+                  }`}
+                  aria-label={`Go to image ${index + 1}`}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </div>
+      
+      <style jsx>{`
+        @keyframes kenburns {
+          0% {
+            transform: scale(1) translateX(0);
+          }
+          50% {
+            transform: scale(1.1) translateX(-2%);
+          }
+          100% {
+            transform: scale(1.2) translateX(2%);
+          }
+        }
+        
+        .animate-kenburns {
+          animation: kenburns 20s ease-in-out infinite;
+        }
+        
+        .duration-2000 {
+          transition-duration: 2000ms;
+        }
+      `}</style>
     </div>
   )
 }
