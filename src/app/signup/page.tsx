@@ -135,46 +135,37 @@ export default function SignUpPage() {
               <button
                 type="button"
                 onClick={() => setSelectedRole('PARENT')}
-                className={`relative z-10 flex-1 py-2.5 px-3 rounded-full text-center transition-all duration-300 ${
+                className={`relative z-10 flex-1 py-3 px-4 rounded-full text-center transition-all duration-300 ${
                   selectedRole === 'PARENT' 
-                    ? 'text-white' 
+                    ? 'text-white font-semibold' 
                     : 'text-gray-600 hover:text-gray-800'
                 }`}
               >
-                <div className="flex flex-col items-center">
-                  <span className="text-lg mb-0.5">👨‍👩‍👧</span>
-                  <span className="text-xs font-medium">Parent</span>
-                </div>
+                <span className="text-sm">Parent</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setSelectedRole('STUDENT')}
-                className={`relative z-10 flex-1 py-2.5 px-3 rounded-full text-center transition-all duration-300 ${
+                className={`relative z-10 flex-1 py-3 px-4 rounded-full text-center transition-all duration-300 ${
                   selectedRole === 'STUDENT' 
-                    ? 'text-white' 
+                    ? 'text-white font-semibold' 
                     : 'text-gray-600 hover:text-gray-800'
                 }`}
               >
-                <div className="flex flex-col items-center">
-                  <span className="text-lg mb-0.5">🎓</span>
-                  <span className="text-xs font-medium">Student</span>
-                </div>
+                <span className="text-sm">Student</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setSelectedRole('INSTITUTION')}
-                className={`relative z-10 flex-1 py-2.5 px-3 rounded-full text-center transition-all duration-300 ${
+                className={`relative z-10 flex-1 py-3 px-4 rounded-full text-center transition-all duration-300 ${
                   selectedRole === 'INSTITUTION' 
-                    ? 'text-white' 
+                    ? 'text-white font-semibold' 
                     : 'text-gray-600 hover:text-gray-800'
                 }`}
               >
-                <div className="flex flex-col items-center">
-                  <span className="text-lg mb-0.5">🏫</span>
-                  <span className="text-xs font-medium">Institution</span>
-                </div>
+                <span className="text-sm">Institution</span>
               </button>
             </div>
 
