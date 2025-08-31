@@ -30,9 +30,11 @@ export default function Home() {
           <div className="flex justify-between h-16">
             <div className="flex items-center">
               <div className="flex items-center">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center mr-3">
-                  <span className="text-white font-bold text-lg">UP</span>
-                </div>
+                <img 
+                  src="/logo.svg" 
+                  alt="UpstartPrep Logo" 
+                  className="h-10 w-auto mr-3"
+                />
                 <h1 className="text-2xl font-bold text-gray-900">UpstartPrep</h1>
               </div>
             </div>

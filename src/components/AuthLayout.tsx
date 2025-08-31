@@ -66,9 +66,11 @@ export default function AuthLayout({
         <div className="relative z-10 flex flex-col items-center justify-center px-8 text-white">
           <div className="max-w-md text-center">
             <div className="mb-8">
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-white/10 backdrop-blur-sm rounded-2xl mb-6">
-                <span className="text-3xl font-bold">UP</span>
-              </div>
+              <img 
+                src="/logo.svg" 
+                alt="UpstartPrep Logo" 
+                className="w-32 h-32 mx-auto filter brightness-0 invert"
+              />
             </div>
             <h2 className="text-4xl font-bold mb-4">{title}</h2>
             <p className="text-lg text-blue-100 mb-8">{subtitle}</p>
