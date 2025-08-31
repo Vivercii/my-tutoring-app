@@ -110,80 +110,82 @@ export default function SignUpPage() {
           </p>
         </div>
 
-        {/* Role Selector */}
+        {/* Role Selector - Dynamic Toggle */}
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700 mb-3 text-center">
-            I am signing up as a
+            I am signing up as
           </label>
-          <div className="grid grid-cols-3 gap-3">
-            <button
-              type="button"
-              onClick={() => setSelectedRole('PARENT')}
-              className={`relative px-4 py-3 rounded-lg border-2 transition-all duration-200 ${
-                selectedRole === 'PARENT'
-                  ? 'border-blue-500 bg-blue-50 text-blue-700'
-                  : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              <div className="text-center">
-                <div className="text-2xl mb-1">👨‍👩‍👧</div>
-                <div className="font-medium">Parent</div>
-                <div className="text-xs mt-1 text-gray-500">Manage students</div>
-              </div>
-              {selectedRole === 'PARENT' && (
-                <div className="absolute top-2 right-2">
-                  <svg className="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
+          <div className="relative mx-auto max-w-sm">
+            {/* Toggle Background */}
+            <div className="relative flex bg-gray-100 rounded-full p-1 shadow-inner">
+              {/* Sliding Background */}
+              <div 
+                className="absolute h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full shadow-lg transition-all duration-300 ease-in-out"
+                style={{
+                  width: '33.333%',
+                  transform: `translateX(${
+                    selectedRole === 'PARENT' ? '0%' : 
+                    selectedRole === 'STUDENT' ? '100%' : 
+                    '200%'
+                  })`
+                }}
+              />
+              
+              {/* Options */}
+              <button
+                type="button"
+                onClick={() => setSelectedRole('PARENT')}
+                className={`relative z-10 flex-1 py-2.5 px-3 rounded-full text-center transition-all duration-300 ${
+                  selectedRole === 'PARENT' 
+                    ? 'text-white' 
+                    : 'text-gray-600 hover:text-gray-800'
+                }`}
+              >
+                <div className="flex flex-col items-center">
+                  <span className="text-lg mb-0.5">👨‍👩‍👧</span>
+                  <span className="text-xs font-medium">Parent</span>
                 </div>
-              )}
-            </button>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => setSelectedRole('STUDENT')}
-              className={`relative px-4 py-3 rounded-lg border-2 transition-all duration-200 ${
-                selectedRole === 'STUDENT'
-                  ? 'border-blue-500 bg-blue-50 text-blue-700'
-                  : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              <div className="text-center">
-                <div className="text-2xl mb-1">🎓</div>
-                <div className="font-medium">Student</div>
-                <div className="text-xs mt-1 text-gray-500">Learn & grow</div>
-              </div>
-              {selectedRole === 'STUDENT' && (
-                <div className="absolute top-2 right-2">
-                  <svg className="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
+              <button
+                type="button"
+                onClick={() => setSelectedRole('STUDENT')}
+                className={`relative z-10 flex-1 py-2.5 px-3 rounded-full text-center transition-all duration-300 ${
+                  selectedRole === 'STUDENT' 
+                    ? 'text-white' 
+                    : 'text-gray-600 hover:text-gray-800'
+                }`}
+              >
+                <div className="flex flex-col items-center">
+                  <span className="text-lg mb-0.5">🎓</span>
+                  <span className="text-xs font-medium">Student</span>
                 </div>
-              )}
-            </button>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => setSelectedRole('INSTITUTION')}
-              className={`relative px-4 py-3 rounded-lg border-2 transition-all duration-200 ${
-                selectedRole === 'INSTITUTION'
-                  ? 'border-blue-500 bg-blue-50 text-blue-700'
-                  : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              <div className="text-center">
-                <div className="text-2xl mb-1">🏫</div>
-                <div className="font-medium">Institution</div>
-                <div className="text-xs mt-1 text-gray-500">Manage classes</div>
-              </div>
-              {selectedRole === 'INSTITUTION' && (
-                <div className="absolute top-2 right-2">
-                  <svg className="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
+              <button
+                type="button"
+                onClick={() => setSelectedRole('INSTITUTION')}
+                className={`relative z-10 flex-1 py-2.5 px-3 rounded-full text-center transition-all duration-300 ${
+                  selectedRole === 'INSTITUTION' 
+                    ? 'text-white' 
+                    : 'text-gray-600 hover:text-gray-800'
+                }`}
+              >
+                <div className="flex flex-col items-center">
+                  <span className="text-lg mb-0.5">🏫</span>
+                  <span className="text-xs font-medium">Institution</span>
                 </div>
-              )}
-            </button>
+              </button>
+            </div>
+
+            {/* Description */}
+            <div className="mt-3 text-center">
+              <p className="text-sm text-gray-500 transition-all duration-300">
+                {selectedRole === 'PARENT' && 'Manage and track your children\'s learning progress'}
+                {selectedRole === 'STUDENT' && 'Access courses and connect with tutors'}
+                {selectedRole === 'INSTITUTION' && 'Manage classes, tutors, and student enrollments'}
+              </p>
+            </div>
           </div>
         </div>
 
