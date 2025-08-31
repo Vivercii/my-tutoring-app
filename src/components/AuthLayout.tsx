@@ -10,7 +10,7 @@ interface AuthLayoutProps {
 
 export default function AuthLayout({ 
   children, 
-  title = "Welcome to UpstartPrep",
+  title = "Welcome to UpstartPrep Tutoring",
   subtitle = "Your journey to academic excellence starts here"
 }: AuthLayoutProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)

@@ -95,7 +95,7 @@ export default function SignUpPage() {
               alt="UpstartPrep Logo" 
               className="h-12 w-auto"
             />
-            <span className="ml-3 text-2xl font-bold text-gray-900">UpstartPrep</span>
+            <span className="ml-3 text-3xl font-normal text-gray-900">UpstartPrep Tutoring</span>
           </div>
         </div>
 
