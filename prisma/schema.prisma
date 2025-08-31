@@ -12,14 +12,15 @@ datasource db {
 
 // Represents the parent/client account
 model User {
-  id        String    @id @default(cuid())
-  email     String    @unique
-  name      String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id             String    @id @default(cuid())
+  email          String    @unique
+  name           String?
+  hashedPassword String?   // Add this line
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
   
   // A User (parent) can have multiple students
-  students  Student[]
+  students       Student[]
 }
 
 // Represents an individual student, linked to a User account
