@@ -65,21 +65,21 @@ export default function LoginClientPage() {
       title="Welcome Back"
       subtitle="Continue your learning journey with UpstartPrep Tutoring"
     >
-      <div>
-        {/* Logo */}
-        <div className="flex justify-center mb-8">
+      <div className="relative">
+        {/* Logo - positioned at top left */}
+        <div className="absolute -top-20 left-0">
           <div className="flex items-center">
             <img 
               src="/logo.svg" 
               alt="UpstartPrep Logo" 
-              className="h-12 w-auto"
+              className="h-10 w-auto"
             />
-            <span className="ml-3 text-3xl font-normal text-gray-900">UpstartPrep Tutoring</span>
+            <span className="ml-2 text-2xl font-normal text-gray-900">UpstartPrep Tutoring</span>
           </div>
         </div>
 
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-8 mt-8">
           <h2 className="text-3xl font-bold text-gray-900">Sign in to your account</h2>
           <p className="mt-2 text-sm text-gray-600">
             Don't have an account?{' '}
