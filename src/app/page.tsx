@@ -29,7 +29,12 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-blue-600">My Tutoring App</h1>
+              <div className="flex items-center">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center mr-3">
+                  <span className="text-white font-bold text-lg">UP</span>
+                </div>
+                <h1 className="text-2xl font-bold text-gray-900">UpstartPrep</h1>
+              </div>
             </div>
             <div className="flex items-center space-x-4">
               <Link
@@ -52,10 +57,10 @@ export default function Home() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center">
           <h2 className="text-4xl font-extrabold text-gray-900 sm:text-5xl">
-            Welcome to My Tutoring App
+            Welcome to UpstartPrep
           </h2>
           <p className="mt-4 text-xl text-gray-600">
-            Connect with expert tutors and manage your learning journey
+            Your pathway to academic excellence with expert tutors
           </p>
           <div className="mt-8 flex justify-center space-x-4">
             <Link
