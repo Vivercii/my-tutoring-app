@@ -115,12 +115,12 @@ export default function SignUpPage() {
           <label className="block text-sm font-medium text-gray-700 mb-3 text-center">
             I am signing up as
           </label>
-          <div className="relative mx-auto max-w-sm">
+          <div className="relative mx-auto max-w-xs">
             {/* Toggle Background */}
-            <div className="relative flex bg-gray-100 rounded-full p-1 shadow-inner">
+            <div className="relative flex bg-gray-100 rounded-full p-0.5 shadow-inner">
               {/* Sliding Background */}
               <div 
-                className="absolute h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full shadow-lg transition-all duration-300 ease-in-out"
+                className="absolute h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full shadow-md transition-all duration-300 ease-in-out"
                 style={{
                   width: '33.333%',
                   transform: `translateX(${
@@ -135,37 +135,37 @@ export default function SignUpPage() {
               <button
                 type="button"
                 onClick={() => setSelectedRole('PARENT')}
-                className={`relative z-10 flex-1 py-3 px-4 rounded-full text-center transition-all duration-300 ${
+                className={`relative z-10 flex-1 py-2 px-3 rounded-full text-center transition-all duration-300 ${
                   selectedRole === 'PARENT' 
                     ? 'text-white font-semibold' 
                     : 'text-gray-600 hover:text-gray-800'
                 }`}
               >
-                <span className="text-sm">Parent</span>
+                <span className="text-xs">Parent</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setSelectedRole('STUDENT')}
-                className={`relative z-10 flex-1 py-3 px-4 rounded-full text-center transition-all duration-300 ${
+                className={`relative z-10 flex-1 py-2 px-3 rounded-full text-center transition-all duration-300 ${
                   selectedRole === 'STUDENT' 
                     ? 'text-white font-semibold' 
                     : 'text-gray-600 hover:text-gray-800'
                 }`}
               >
-                <span className="text-sm">Student</span>
+                <span className="text-xs">Student</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setSelectedRole('INSTITUTION')}
-                className={`relative z-10 flex-1 py-3 px-4 rounded-full text-center transition-all duration-300 ${
+                className={`relative z-10 flex-1 py-2 px-3 rounded-full text-center transition-all duration-300 ${
                   selectedRole === 'INSTITUTION' 
                     ? 'text-white font-semibold' 
                     : 'text-gray-600 hover:text-gray-800'
                 }`}
               >
-                <span className="text-sm">Institution</span>
+                <span className="text-xs">Institution</span>
               </button>
             </div>
 
