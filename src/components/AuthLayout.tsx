@@ -64,16 +64,9 @@ export default function AuthLayout({
         
         {/* Content - centered in the middle of the column */}
         <div className="relative z-10 flex items-center justify-center min-h-screen">
-          <div className="text-center text-white px-8">
-            <div className="mb-8">
-              <img 
-                src="/logo.svg" 
-                alt="UpstartPrep Logo" 
-                className="w-32 h-32 mx-auto filter brightness-0 invert"
-              />
-            </div>
+          <div className="text-center text-white px-8 -mt-16">
             <h2 className="text-4xl font-bold mb-4">{title}</h2>
-            <p className="text-lg text-gray-200 mb-8">{subtitle}</p>
+            <p className="text-lg text-gray-200 mb-12">{subtitle}</p>
             
             {/* Stats or Features */}
             <div className="grid grid-cols-2 gap-6 mt-12">
