@@ -59,12 +59,12 @@ export default function AuthLayout({
           </div>
         ))}
         
-        {/* Overlay gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-900/90 via-blue-800/85 to-indigo-900/90"></div>
+        {/* Overlay - darker, more neutral */}
+        <div className="absolute inset-0 bg-black/70"></div>
         
-        {/* Content */}
-        <div className="relative z-10 flex flex-col items-center justify-center px-8 text-white">
-          <div className="max-w-md text-center">
+        {/* Content - properly centered */}
+        <div className="relative z-10 flex items-center justify-center min-h-screen px-8">
+          <div className="max-w-md text-center text-white">
             <div className="mb-8">
               <img 
                 src="/logo.svg" 
@@ -73,25 +73,25 @@ export default function AuthLayout({
               />
             </div>
             <h2 className="text-4xl font-bold mb-4">{title}</h2>
-            <p className="text-lg text-blue-100 mb-8">{subtitle}</p>
+            <p className="text-lg text-gray-200 mb-8">{subtitle}</p>
             
             {/* Stats or Features */}
             <div className="grid grid-cols-2 gap-6 mt-12">
               <div className="text-center bg-white/10 backdrop-blur-sm rounded-lg p-4">
                 <div className="text-3xl font-bold mb-2">500+</div>
-                <div className="text-sm text-blue-200">Expert Tutors</div>
+                <div className="text-sm text-gray-300">Expert Tutors</div>
               </div>
               <div className="text-center bg-white/10 backdrop-blur-sm rounded-lg p-4">
                 <div className="text-3xl font-bold mb-2">10,000+</div>
-                <div className="text-sm text-blue-200">Happy Students</div>
+                <div className="text-sm text-gray-300">Happy Students</div>
               </div>
               <div className="text-center bg-white/10 backdrop-blur-sm rounded-lg p-4">
                 <div className="text-3xl font-bold mb-2">4.9/5</div>
-                <div className="text-sm text-blue-200">Average Rating</div>
+                <div className="text-sm text-gray-300">Average Rating</div>
               </div>
               <div className="text-center bg-white/10 backdrop-blur-sm rounded-lg p-4">
                 <div className="text-3xl font-bold mb-2">24/7</div>
-                <div className="text-sm text-blue-200">Support Available</div>
+                <div className="text-sm text-gray-300">Support Available</div>
               </div>
             </div>
 
