@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
 
     // Return empty activities for now
     // This endpoint will be properly implemented later
-    const activities = []
+    const activities: any[] = []
 
     return NextResponse.json(activities)
   } catch (error) {
