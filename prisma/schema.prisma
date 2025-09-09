@@ -71,6 +71,7 @@ model StudentProfile {
   scheduledSessions ScheduledSession[]
   sessionLogs       SessionLog[]
   goals             StudentGoal[]
+  colleges          StudentCollege[]   // Student's college list
   student           User               @relation("StudentProfile", fields: [studentId], references: [id])
 }
 
@@ -570,4 +571,93 @@ model MessageThread {
   @@index([studentId])
   @@index([instructorId])
   @@index([lastMessageAt])
+}
+
+model College {
+  id                String            @id @default(cuid())
+  name              String
+  state             String?
+  city              String?
+  website           String?
+  type              String?           // Private, Public
+  control           String?           // Private, Public, Proprietary
+  size              String?           // Small, Medium, Large
+  setting           String?           // Urban, Suburban, Rural
+  // Admission Data
+  admissionRate     Float?            // Acceptance rate percentage
+  totalEnrollment   Int?
+  undergradEnrollment Int?
+  // Test Scores (25th-75th percentile ranges)
+  satMathLow        Int?
+  satMathHigh       Int?
+  satReadingLow     Int?
+  satReadingHigh    Int?
+  satTotalLow       Int?              // Calculated from components
+  satTotalHigh      Int?              // Calculated from components
+  actCompositeLow   Int?
+  actCompositeHigh  Int?
+  actMathLow        Int?
+  actMathHigh       Int?
+  actEnglishLow     Int?
+  actEnglishHigh    Int?
+  // GPA
+  averageGPA        Float?
+  // Costs
+  inStateTuition    Int?
+  outStateTuition   Int?
+  roomAndBoard      Int?
+  // Rankings and categorization
+  ranking           Int?
+  category          String?           // Ivy League, State School, Liberal Arts, etc.
+  // Search optimization
+  searchName        String?           // Lowercase name for searching
+  aliases           String[]          // Alternative names
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  
+  students          StudentCollege[]  // Students who have this college on their list
+  
+  @@index([searchName])
+  @@index([state])
+  @@index([admissionRate])
+  @@index([satTotalLow, satTotalHigh])
+  @@index([actCompositeLow, actCompositeHigh])
+}
+
+model StudentCollege {
+  id               String          @id @default(cuid())
+  studentProfileId String
+  collegeId        String
+  listType         CollegeListType // DREAM, TARGET, SAFETY
+  status           ApplicationStatus @default(NOT_STARTED)
+  notes            String?
+  applicationDeadline DateTime?
+  decisionDate     DateTime?
+  financialAidApplied Boolean     @default(false)
+  scholarshipAmount Float?
+  addedAt          DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  
+  studentProfile   StudentProfile  @relation(fields: [studentProfileId], references: [id])
+  college          College         @relation(fields: [collegeId], references: [id])
+  
+  @@unique([studentProfileId, collegeId])
+  @@index([studentProfileId, listType])
+}
+
+enum CollegeListType {
+  DREAM
+  TARGET
+  SAFETY
+}
+
+enum ApplicationStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  SUBMITTED
+  DEFERRED
+  WAITLISTED
+  ACCEPTED
+  REJECTED
+  ENROLLED
 }
