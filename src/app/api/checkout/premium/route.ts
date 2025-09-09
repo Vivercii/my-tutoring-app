@@ -49,8 +49,8 @@ export async function POST(req: NextRequest) {
         },
       ],
       mode: 'subscription',
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?success=true&type=premium`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?canceled=true`,
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'https://my-tutoring-app-bev2-xi.vercel.app'}/dashboard?success=true&type=premium`,
+      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'https://my-tutoring-app-bev2-xi.vercel.app'}/dashboard?canceled=true`,
       metadata: {
         userId: session.user.id,
         userEmail: session.user.email!,

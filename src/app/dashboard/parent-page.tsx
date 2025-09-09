@@ -242,7 +242,7 @@ export default function ParentDashboard() {
   const quickStats = [
     {
       label: 'Session Balance',
-      value: `${sessionBalance}h`,
+      value: `${sessionBalance || 0}h`,
       icon: Clock,
       color: 'text-blue-600',
       bgColor: 'bg-blue-50',
@@ -250,7 +250,7 @@ export default function ParentDashboard() {
     },
     {
       label: 'Active Students',
-      value: students.length.toString(),
+      value: (students?.length || 0).toString(),
       icon: Users,
       color: 'text-green-600',
       bgColor: 'bg-green-50',
@@ -258,7 +258,7 @@ export default function ParentDashboard() {
     },
     {
       label: 'This Month',
-      value: `${monthlySessionCount} ${monthlySessionCount === 1 ? 'session' : 'sessions'}`,
+      value: `${monthlySessionCount || 0} ${monthlySessionCount === 1 ? 'session' : 'sessions'}`,
       icon: Calendar,
       color: 'text-purple-600',
       bgColor: 'bg-purple-50',

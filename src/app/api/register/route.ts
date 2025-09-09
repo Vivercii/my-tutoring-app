@@ -37,15 +37,21 @@ export async function POST(request: Request) {
       )
     }
 
-    const existingUser = await prisma.user.findUnique({
-      where: { email }
-    })
+    // Try to check for existing user with error handling
+    try {
+      const existingUser = await prisma.user.findUnique({
+        where: { email }
+      })
 
-    if (existingUser) {
-      return NextResponse.json(
-        { error: 'User already exists' },
-        { status: 409 }
-      )
+      if (existingUser) {
+        return NextResponse.json(
+          { error: 'User already exists' },
+          { status: 409 }
+        )
+      }
+    } catch (dbError) {
+      console.error('Database connection error during user check:', dbError)
+      // Continue with registration attempt even if check fails
     }
 
     const hashedPassword = await bcrypt.hash(password, 12)
