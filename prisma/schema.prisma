@@ -61,12 +61,39 @@ model StudentProfile {
   strengths         String?
   weaknesses        String?
   preferredSchedule String?
+  // OKR and exam planning fields
+  examDate          DateTime?          // When they're taking the exam
+  hasCompletedOnboarding Boolean       @default(false)
+  onboardingStep    Int                @default(0)
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
   parents           ParentStudent[]
   scheduledSessions ScheduledSession[]
   sessionLogs       SessionLog[]
+  goals             StudentGoal[]
   student           User               @relation("StudentProfile", fields: [studentId], references: [id])
+}
+
+model StudentGoal {
+  id              String         @id @default(cuid())
+  studentProfileId String
+  type            GoalType       // OBJECTIVE or KEY_RESULT
+  title           String
+  description     String?
+  targetValue     String?        // For measurable key results
+  currentValue    String?        // Current progress
+  deadline        DateTime?
+  status          GoalStatus     @default(NOT_STARTED)
+  parentGoalId    String?        // For linking key results to objectives
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  
+  studentProfile  StudentProfile @relation(fields: [studentProfileId], references: [id])
+  parentGoal      StudentGoal?   @relation("GoalHierarchy", fields: [parentGoalId], references: [id])
+  keyResults      StudentGoal[]  @relation("GoalHierarchy")
+  
+  @@index([studentProfileId])
+  @@index([parentGoalId])
 }
 
 model ParentStudent {
@@ -465,6 +492,19 @@ enum ModuleType {
 enum ModuleDifficulty {
   EASY
   HARD
+}
+
+enum GoalType {
+  OBJECTIVE
+  KEY_RESULT
+}
+
+enum GoalStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  AT_RISK
+  COMPLETED
+  CANCELLED
 }
 
 model ZoomClick {

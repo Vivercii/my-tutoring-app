@@ -3,7 +3,7 @@
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import StudentDashboard from '@/components/StudentDashboard'
+import StudentDashboardPage from './student/page'
 import ParentDashboard from './parent-page'
 import SATDatesWidget from '@/components/SATDatesWidget'
 
@@ -37,7 +37,7 @@ export default function DashboardPage() {
       
       {/* Show appropriate dashboard based on role */}
       {session.user?.role === 'STUDENT' ? (
-        <StudentDashboard user={session.user} />
+        <StudentDashboardPage />
       ) : (
         <ParentDashboard />
       )}

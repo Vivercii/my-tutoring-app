@@ -266,7 +266,7 @@ export default function ParentDashboard() {
     },
     {
       label: 'Average Score',
-      value: 'N/A',
+      value: 'No scores yet',
       icon: TrendingUp,
       color: 'text-orange-600',
       bgColor: 'bg-orange-50',
