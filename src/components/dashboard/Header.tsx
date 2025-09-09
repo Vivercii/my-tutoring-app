@@ -17,7 +17,12 @@ export default function Header({ onMenuClick }: HeaderProps) {
         </svg>
       </button>
       <div className="flex-1 flex items-center justify-center">
-        <span className="text-xl font-semibold text-gray-900">UpstartPrep</span>
+        <img 
+          src="https://res.cloudinary.com/dsoo2uoow/image/upload/c_crop,w_800,h_300,g_auto/v1757102414/Upstart_Prep_Logo_uqiba4.svg"
+          alt="Upstart Prep"
+          className="w-auto"
+          style={{ height: '50px', maxWidth: '160px' }}
+        />
       </div>
     </div>
   )

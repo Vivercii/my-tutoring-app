@@ -4,6 +4,10 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import AuthLayout from '@/components/AuthLayout'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
 
 type UserRole = 'PARENT' | 'STUDENT' | 'INSTITUTION'
 
@@ -191,83 +195,72 @@ export default function SignUpPage() {
 
         {/* Form */}
         <form className="space-y-5" onSubmit={handleSubmit}>
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-              Full name
-            </label>
-            <input
+          <div className="grid gap-2">
+            <Label htmlFor="name">Full name</Label>
+            <Input
               id="name"
               name="name"
               type="text"
               autoComplete="name"
-              className="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150"
               placeholder="Enter your full name"
               value={formData.name}
               onChange={handleChange}
             />
           </div>
 
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-              Email address
-            </label>
-            <input
+          <div className="grid gap-2">
+            <Label htmlFor="email">Email address</Label>
+            <Input
               id="email"
               name="email"
               type="email"
               autoComplete="email"
               required
-              className="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150"
               placeholder="Enter your email"
               value={formData.email}
               onChange={handleChange}
             />
           </div>
 
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-              Password
-            </label>
-            <input
+          <div className="grid gap-2">
+            <Label htmlFor="password">Password</Label>
+            <Input
               id="password"
               name="password"
               type="password"
               autoComplete="new-password"
               required
-              className="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150"
               placeholder="Create a password (min. 6 characters)"
               value={formData.password}
               onChange={handleChange}
             />
           </div>
 
-          <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
-              Confirm password
-            </label>
-            <input
+          <div className="grid gap-2">
+            <Label htmlFor="confirmPassword">Confirm password</Label>
+            <Input
               id="confirmPassword"
               name="confirmPassword"
               type="password"
               autoComplete="new-password"
               required
-              className="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150"
               placeholder="Confirm your password"
               value={formData.confirmPassword}
               onChange={handleChange}
             />
           </div>
 
-          <div className="flex items-start">
-            <input
+          <div className="flex items-start space-x-2">
+            <Checkbox 
               id="agree-terms"
-              name="agree-terms"
-              type="checkbox"
               checked={agreedToTerms}
-              onChange={(e) => setAgreedToTerms(e.target.checked)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-0.5"
+              onCheckedChange={(checked) => setAgreedToTerms(checked as boolean)}
+              className="mt-0.5"
             />
-            <label htmlFor="agree-terms" className="ml-2 block text-sm text-gray-700">
+            <Label 
+              htmlFor="agree-terms" 
+              className="text-sm font-normal cursor-pointer"
+            >
               I agree to the{' '}
               <Link href="/terms" className="text-blue-600 hover:text-blue-500">
                 Terms and Conditions
@@ -276,26 +269,26 @@ export default function SignUpPage() {
               <Link href="/privacy" className="text-blue-600 hover:text-blue-500">
                 Privacy Policy
               </Link>
-            </label>
+            </Label>
           </div>
 
-          <button
+          <Button
             type="submit"
             disabled={isLoading || !agreedToTerms}
-            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition duration-150"
+            className="w-full"
           >
             {isLoading ? (
-              <span className="flex items-center">
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <>
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
                 Creating account...
-              </span>
+              </>
             ) : (
               'Create account'
             )}
-          </button>
+          </Button>
 
           {/* Divider */}
           <div className="relative my-6">
@@ -309,10 +302,11 @@ export default function SignUpPage() {
 
           {/* Social Signup Buttons */}
           <div className="grid grid-cols-2 gap-3">
-            <button
+            <Button
               type="button"
+              variant="outline"
               onClick={() => handleSocialSignup('google')}
-              className="w-full inline-flex justify-center py-2.5 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150"
+              className="w-full"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -321,12 +315,13 @@ export default function SignUpPage() {
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
               </svg>
               <span className="ml-2">Google</span>
-            </button>
+            </Button>
 
-            <button
+            <Button
               type="button"
+              variant="outline"
               onClick={() => handleSocialSignup('microsoft')}
-              className="w-full inline-flex justify-center py-2.5 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150"
+              className="w-full"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path fill="#F25022" d="M11.4 11.4H1V1h10.4v10.4z"/>
@@ -335,7 +330,7 @@ export default function SignUpPage() {
                 <path fill="#FFB900" d="M23 23H12.6V12.6H23V23z"/>
               </svg>
               <span className="ml-2">Microsoft</span>
-            </button>
+            </Button>
           </div>
         </form>
       </div>

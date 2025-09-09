@@ -4,6 +4,9 @@ import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { GraduationCap, BookOpen, Calendar } from 'lucide-react'
 
 export default function Home() {
   const { data: session, status } = useSession()
@@ -18,38 +21,25 @@ export default function Home() {
   if (status === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-gray-500">Loading...</div>
+        <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary border-t-transparent"></div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <nav className="bg-white shadow-sm">
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted">
+      <nav className="bg-background border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
-              <div className="flex items-center">
-                <img 
-                  src="/logo.svg" 
-                  alt="UpstartPrep Logo" 
-                  className="h-10 w-auto mr-3"
-                />
-                <h1 className="text-3xl font-normal text-gray-900">UpstartPrep Tutoring</h1>
-              </div>
+              <h1 className="text-2xl font-semibold">UpstartPrep Tutoring</h1>
             </div>
             <div className="flex items-center space-x-4">
-              <Link
-                href="/login"
-                className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-              >
-                Login
+              <Link href="/login">
+                <Button variant="ghost">Login</Button>
               </Link>
-              <Link
-                href="/signup"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
-              >
-                Sign Up
+              <Link href="/signup">
+                <Button>Sign Up</Button>
               </Link>
             </div>
           </div>
@@ -58,50 +48,54 @@ export default function Home() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center">
-          <h2 className="text-4xl font-extrabold text-gray-900 sm:text-5xl">
+          <h2 className="text-4xl font-bold tracking-tight sm:text-5xl">
             Welcome to UpstartPrep Tutoring
           </h2>
-          <p className="mt-4 text-xl text-gray-600">
+          <p className="mt-4 text-xl text-muted-foreground">
             Your pathway to academic excellence with expert tutors
           </p>
           <div className="mt-8 flex justify-center space-x-4">
-            <Link
-              href="/signup"
-              className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:py-4 md:text-lg md:px-10"
-            >
-              Get Started
+            <Link href="/signup">
+              <Button size="lg" className="px-8">
+                Get Started
+              </Button>
             </Link>
-            <Link
-              href="/login"
-              className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-blue-600 bg-white hover:bg-gray-50 border-blue-600 md:py-4 md:text-lg md:px-10"
-            >
-              Sign In
+            <Link href="/login">
+              <Button size="lg" variant="outline" className="px-8">
+                Sign In
+              </Button>
             </Link>
           </div>
         </div>
 
         <div className="mt-20 grid grid-cols-1 gap-8 md:grid-cols-3">
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <div className="text-3xl mb-4">👨‍🏫</div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Expert Tutors</h3>
-            <p className="text-gray-600">
-              Connect with qualified tutors in various subjects
-            </p>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <div className="text-3xl mb-4">📚</div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Track Progress</h3>
-            <p className="text-gray-600">
-              Monitor student progress and learning milestones
-            </p>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <div className="text-3xl mb-4">📅</div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Easy Scheduling</h3>
-            <p className="text-gray-600">
-              Schedule and manage tutoring sessions effortlessly
-            </p>
-          </div>
+          <Card>
+            <CardContent className="p-6">
+              <GraduationCap className="h-8 w-8 mb-4 text-primary" />
+              <h3 className="text-lg font-semibold mb-2">Expert Tutors</h3>
+              <p className="text-muted-foreground">
+                Connect with qualified tutors in various subjects
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-6">
+              <BookOpen className="h-8 w-8 mb-4 text-primary" />
+              <h3 className="text-lg font-semibold mb-2">Track Progress</h3>
+              <p className="text-muted-foreground">
+                Monitor student progress and learning milestones
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-6">
+              <Calendar className="h-8 w-8 mb-4 text-primary" />
+              <h3 className="text-lg font-semibold mb-2">Easy Scheduling</h3>
+              <p className="text-muted-foreground">
+                Schedule and manage tutoring sessions effortlessly
+              </p>
+            </CardContent>
+          </Card>
         </div>
       </main>
     </div>

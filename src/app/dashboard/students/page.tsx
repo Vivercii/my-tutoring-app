@@ -3,206 +3,417 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import AddStudentModal from '@/components/students/AddStudentModal'
+import {
+  Users,
+  UserPlus,
+  Search,
+  GraduationCap,
+  Calendar,
+  Clock,
+  ChevronRight,
+  AlertCircle,
+  CheckCircle,
+  X,
+  BookOpen,
+  TrendingUp,
+  Award,
+  Activity
+} from 'lucide-react'
 
-interface Student {
+interface LinkedStudent {
   id: string
-  name: string
-  createdAt: string
-  updatedAt: string
+  student: {
+    id: string
+    name: string | null
+    email: string | null
+    inviteKey: string | null
+    phoneNumber: string | null
+    timezone: string | null
+    createdAt: string
+  }
+  program: string
+  gradeLevel: string | null
+  school: string | null
+  relationshipType: string | null
+  isPrimary: boolean
+  sessionLogs: any[]
+  otherParents?: {
+    id: string
+    name: string | null
+    email: string | null
+    phoneNumber: string | null
+    relationshipType: string | null
+    isPrimary: boolean
+  }[]
 }
 
 export default function StudentsPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [students, setStudents] = useState<Student[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [students, setStudents] = useState<LinkedStudent[]>([])
+  const [loading, setLoading] = useState(true)
+  const [showLinkForm, setShowLinkForm] = useState(false)
+  const [inviteKey, setInviteKey] = useState('')
+  const [relationshipType, setRelationshipType] = useState('parent')
+  const [linking, setLinking] = useState(false)
+  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
+  const [searchTerm, setSearchTerm] = useState('')
 
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/login')
-    } else if (status === 'authenticated') {
+    } else if (session?.user?.role === 'STUDENT') {
+      router.push('/dashboard')
+    } else if (session?.user?.role === 'PARENT') {
       fetchStudents()
     }
-  }, [status, router])
+  }, [status, session, router])
 
   const fetchStudents = async () => {
     try {
-      const response = await fetch('/api/students')
-      if (!response.ok) {
-        throw new Error('Failed to fetch students')
+      const response = await fetch('/api/students/link')
+      if (response.ok) {
+        const data = await response.json()
+        setStudents(data.students)
       }
-      const data = await response.json()
-      setStudents(data.students || [])
     } catch (error) {
-      console.error('Error fetching students:', error)
+      console.error('Failed to fetch students:', error)
     } finally {
-      setIsLoading(false)
+      setLoading(false)
     }
   }
 
-  const handleAddSuccess = () => {
-    fetchStudents() // Refresh the list after adding a student
+  const handleLinkStudent = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLinking(true)
+    setMessage(null)
+
+    try {
+      const response = await fetch('/api/students/link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          inviteKey: inviteKey.toUpperCase(),
+          relationshipType: relationshipType 
+        })
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setMessage({ type: 'success', text: 'Student account linked successfully!' })
+        setInviteKey('')
+        setShowLinkForm(false)
+        fetchStudents()
+      } else {
+        setMessage({ type: 'error', text: data.error || 'Failed to link student' })
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'An error occurred' })
+    } finally {
+      setLinking(false)
+    }
   }
 
-  if (status === 'loading' || isLoading) {
+  const filteredStudents = students.filter(student => {
+    const searchLower = searchTerm.toLowerCase()
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      student.student.name?.toLowerCase().includes(searchLower) ||
+      student.student.email?.toLowerCase().includes(searchLower) ||
+      student.program.toLowerCase().includes(searchLower)
+    )
+  })
+
+  const totalSessions = students.reduce((acc, student) => acc + student.sessionLogs.length, 0)
+  const totalHours = students.reduce((acc, student) => 
+    acc + student.sessionLogs.reduce((sum, log) => sum + log.duration, 0), 0
+  )
+
+  if (status === 'loading' || loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-2 border-blue-500 border-t-transparent"></div>
       </div>
     )
   }
 
-  if (!session) {
-    return null
-  }
-
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="py-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-          {/* Page Header */}
-          <div className="md:flex md:items-center md:justify-between mb-8">
-            <div className="flex-1 min-w-0">
-              <h1 className="text-3xl font-bold text-gray-900">My Students</h1>
-              <p className="mt-2 text-gray-600">
-                Manage your children's profiles and track their learning progress.
-              </p>
+      {/* Header - Black to match dashboard */}
+      <div className="bg-black text-white">
+        <div className="px-6 py-8">
+          <div className="max-w-7xl mx-auto">
+            <h1 className="text-4xl font-light">Student Management</h1>
+            <p className="text-gray-300 mt-2">Manage and monitor your students' progress</p>
+          </div>
+        </div>
+      </div>
+      
+      <main className="max-w-7xl mx-auto px-6 py-8">
+        <div>
+          {/* Stats Overview */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div className="bg-white rounded-lg p-6 border border-gray-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-gray-700 text-sm">Total Students</p>
+                  <p className="text-2xl font-bold text-gray-900 mt-1">{students.length}</p>
+                </div>
+                <Users className="h-8 w-8 text-purple-600" />
+              </div>
             </div>
-            <div className="mt-4 flex md:mt-0 md:ml-4">
-              <button
-                onClick={() => setIsModalOpen(true)}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                <svg className="mr-2 -ml-1 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                Add New Student
-              </button>
+            <div className="bg-white rounded-lg p-6 border border-gray-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-gray-700 text-sm">Total Sessions</p>
+                  <p className="text-2xl font-bold text-gray-900 mt-1">{totalSessions}</p>
+                </div>
+                <BookOpen className="h-8 w-8 text-blue-600" />
+              </div>
             </div>
+            <div className="bg-white rounded-lg p-6 border border-gray-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-gray-700 text-sm">Total Hours</p>
+                  <p className="text-2xl font-bold text-gray-900 mt-1">{totalHours.toFixed(1)}</p>
+                </div>
+                <Clock className="h-8 w-8 text-green-600" />
+              </div>
+            </div>
+            <div className="bg-white rounded-lg p-6 border border-gray-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-gray-700 text-sm">Active Programs</p>
+                  <p className="text-2xl font-bold text-gray-900 mt-1">
+                    {new Set(students.map(s => s.program)).size}
+                  </p>
+                </div>
+                <Award className="h-8 w-8 text-yellow-500" />
+              </div>
+            </div>
+          </div>
+
+          {/* Search and Add Button */}
+          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500" />
+              <input
+                type="text"
+                placeholder="Search students by name, email, or program..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+            <button
+              onClick={() => setShowLinkForm(true)}
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all flex items-center space-x-2"
+            >
+              <UserPlus className="h-5 w-5" />
+              <span>Link Student Account</span>
+            </button>
           </div>
 
           {/* Students Grid */}
-          {students.length > 0 ? (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {students.map((student) => (
-                <StudentCard key={student.id} student={student} />
-              ))}
+          {filteredStudents.length === 0 ? (
+            <div className="bg-gray-800 rounded-2xl p-12 border border-gray-700 text-center">
+              {students.length === 0 ? (
+                <>
+                  <Users className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-white mb-2">No Students Linked Yet</h3>
+                  <p className="text-gray-400 mb-6">
+                    Link your student's account to manage their tutoring sessions and track progress
+                  </p>
+                  <button
+                    onClick={() => setShowLinkForm(true)}
+                    className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all inline-flex items-center space-x-2"
+                  >
+                    <UserPlus className="h-5 w-5" />
+                    <span>Link Your First Student</span>
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Search className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-white mb-2">No Students Found</h3>
+                  <p className="text-gray-400">Try adjusting your search terms</p>
+                </>
+              )}
             </div>
           ) : (
-            <EmptyState onAddClick={() => setIsModalOpen(true)} />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredStudents.map((student) => (
+                <div
+                  key={student.id}
+                  className="bg-gray-800 rounded-xl p-6 border border-gray-700 hover:bg-gray-700 transition-all cursor-pointer group"
+                  onClick={() => router.push(`/dashboard/students/${student.student.id}`)}
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-12 h-12 rounded-full bg-purple-600 flex items-center justify-center">
+                        <span className="text-lg font-bold text-white">
+                          {student.student.name?.charAt(0) || 'S'}
+                        </span>
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-white">
+                          {student.student.name || 'Student'}
+                        </h3>
+                        <p className="text-sm text-gray-400">{student.student.email}</p>
+                      </div>
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-gray-400 group-hover:text-white transition-colors" />
+                  </div>
+
+                  <div className="mb-4 space-y-2">
+                    <div className="flex flex-wrap gap-2">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-400/20 text-purple-300">
+                        {student.program.replace('_', ' ')}
+                      </span>
+                      {student.isPrimary && (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-400/20 text-green-300">
+                          Primary Contact
+                        </span>
+                      )}
+                    </div>
+                    {student.otherParents && student.otherParents.length > 0 && (
+                      <div className="text-xs text-gray-400">
+                        Also linked to: {student.otherParents.map(p => p.name || p.email).join(', ')}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-2xl font-bold text-white">
+                        {student.sessionLogs.length}
+                      </p>
+                      <p className="text-xs text-gray-400">Sessions</p>
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-white">
+                        {student.sessionLogs.reduce((acc, log) => acc + log.duration, 0)}h
+                      </p>
+                      <p className="text-xs text-gray-400">Total Hours</p>
+                    </div>
+                  </div>
+
+                  {student.sessionLogs.length > 0 && (
+                    <div className="mt-4 pt-4 border-t border-gray-200">
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs text-gray-600">Last Session</p>
+                        <p className="text-xs text-gray-700">
+                          {new Date(student.sessionLogs[0].date).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           )}
         </div>
-      </div>
+      </main>
 
-      {/* Add Student Modal */}
-      <AddStudentModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSuccess={handleAddSuccess}
-      />
-    </div>
-  )
-}
-
-function StudentCard({ student }: { student: Student }) {
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(n => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2)
-  }
-
-  return (
-    <div className="bg-white overflow-hidden shadow rounded-lg hover:shadow-lg transition-shadow">
-      <div className="p-5">
-        <div className="flex items-center">
-          <div className="flex-shrink-0">
-            <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-              <span className="text-white font-medium text-sm">
-                {getInitials(student.name)}
-              </span>
+      {/* Link Student Form Modal */}
+      {showLinkForm && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-gray-900">Link Student Account</h3>
+              <button
+                onClick={() => {
+                  setShowLinkForm(false)
+                  setMessage(null)
+                  setInviteKey('')
+                }}
+                className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="h-5 w-5 text-gray-500" />
+              </button>
             </div>
-          </div>
-          <div className="ml-4 flex-1">
-            <h3 className="text-lg font-medium text-gray-900">
-              {student.name}
-            </h3>
-            <p className="text-sm text-gray-500">
-              Added {new Date(student.createdAt).toLocaleDateString()}
+
+            <p className="text-sm text-gray-600 mb-6">
+              Enter the invite key provided by your student to link their account to yours.
             </p>
-          </div>
-          <div className="ml-4">
-            <button className="text-gray-400 hover:text-gray-500">
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
-        </div>
-        
-        {/* Quick Stats */}
-        <div className="mt-4 grid grid-cols-2 gap-4">
-          <div className="text-center">
-            <p className="text-2xl font-semibold text-gray-900">0</p>
-            <p className="text-xs text-gray-500">Sessions</p>
-          </div>
-          <div className="text-center">
-            <p className="text-2xl font-semibold text-gray-900">0h</p>
-            <p className="text-xs text-gray-500">Total Hours</p>
-          </div>
-        </div>
 
-        {/* Action Buttons */}
-        <div className="mt-4 flex gap-2">
-          <button className="flex-1 text-xs bg-gray-50 text-gray-700 px-3 py-2 rounded-md hover:bg-gray-100 transition-colors">
-            View Progress
-          </button>
-          <button className="flex-1 text-xs bg-blue-50 text-blue-700 px-3 py-2 rounded-md hover:bg-blue-100 transition-colors">
-            Book Session
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
+            {message && (
+              <div className={`mb-4 p-3 rounded-lg flex items-center ${
+                message.type === 'success' 
+                  ? 'bg-green-50 text-green-800 border border-green-200' 
+                  : 'bg-red-50 text-red-800 border border-red-200'
+              }`}>
+                {message.type === 'success' ? (
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                ) : (
+                  <AlertCircle className="h-4 w-4 mr-2" />
+                )}
+                <span className="text-sm">{message.text}</span>
+              </div>
+            )}
 
-function EmptyState({ onAddClick }: { onAddClick: () => void }) {
-  return (
-    <div className="bg-white rounded-lg shadow">
-      <div className="px-6 py-12 text-center">
-        <svg
-          className="mx-auto h-12 w-12 text-gray-400"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-          />
-        </svg>
-        <h3 className="mt-2 text-sm font-medium text-gray-900">No students yet</h3>
-        <p className="mt-1 text-sm text-gray-500">
-          Get started by adding your first student profile.
-        </p>
-        <div className="mt-6">
-          <button
-            onClick={onAddClick}
-            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            <svg className="mr-2 -ml-1 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-            Add Your First Student
-          </button>
+            <form onSubmit={handleLinkStudent}>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Student Invite Key
+                </label>
+                <input
+                  type="text"
+                  value={inviteKey}
+                  onChange={(e) => setInviteKey(e.target.value.toUpperCase())}
+                  placeholder="e.g., UP-ABC123"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  The invite key should start with "UP-" followed by 6 characters
+                </p>
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Your Relationship
+                </label>
+                <select
+                  value={relationshipType}
+                  onChange={(e) => setRelationshipType(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="mother">Mother</option>
+                  <option value="father">Father</option>
+                  <option value="parent">Parent</option>
+                  <option value="guardian">Guardian</option>
+                  <option value="other">Other</option>
+                </select>
+                <p className="mt-1 text-xs text-gray-500">
+                  Multiple parents can link to the same student
+                </p>
+              </div>
+
+              <div className="flex space-x-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowLinkForm(false)
+                    setMessage(null)
+                    setInviteKey('')
+                  }}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={linking || inviteKey.length < 9}
+                  className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  {linking ? 'Linking...' : 'Link Account'}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

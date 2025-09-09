@@ -3,104 +3,44 @@
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-
-// Components
-import WelcomeBanner from '@/components/dashboard/WelcomeBanner'
-import StatsGrid from '@/components/dashboard/StatsGrid'
-import UpcomingSessions from '@/components/dashboard/UpcomingSessions'
-import RecentActivity from '@/components/dashboard/RecentActivity'
-
-// Types
-interface DashboardData {
-  user: {
-    id: string
-    email: string
-    name: string | null
-    role: string
-  }
-  stats: {
-    sessionBalance: number
-    sessionsCompleted: number
-    averageRating: number
-    totalSpent: number
-  }
-  upcomingSessions: any[]
-  recentActivities: {
-    id: string
-    type: string
-    description: string
-    time: string
-  }[]
-  students: any[]
-}
+import StudentDashboard from '@/components/StudentDashboard'
+import ParentDashboard from './parent-page'
+import SATDatesWidget from '@/components/SATDatesWidget'
 
 export default function DashboardPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
+    if (status === 'loading') return
+    if (!session) {
       router.push('/login')
     }
-  }, [status, router])
+  }, [session, status, router])
 
-  useEffect(() => {
-    if (status === 'authenticated') {
-      fetchDashboardData()
-    }
-  }, [status])
-
-  const fetchDashboardData = async () => {
-    try {
-      const response = await fetch('/api/dashboard')
-      if (!response.ok) {
-        throw new Error('Failed to fetch dashboard data')
-      }
-      const data = await response.json()
-      setDashboardData(data)
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  if (status === 'loading' || isLoading) {
+  if (status === 'loading') {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"></div>
       </div>
     )
   }
 
-  if (!session || !dashboardData) {
+  if (!session) {
     return null
   }
 
   return (
-    <div className="py-6">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-        {/* Welcome Banner */}
-        <WelcomeBanner userName={dashboardData.user.name} />
-
-        {/* Stats Grid */}
-        <StatsGrid stats={dashboardData.stats} />
-
-        {/* Content Grid */}
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          {/* Upcoming Sessions - Takes 2 columns on large screens */}
-          <div className="lg:col-span-2">
-            <UpcomingSessions sessions={dashboardData.upcomingSessions} />
-          </div>
-
-          {/* Recent Activity - Takes 1 column on large screens */}
-          <div className="lg:col-span-1">
-            <RecentActivity activities={dashboardData.recentActivities} />
-          </div>
-        </div>
-      </div>
-    </div>
+    <>
+      {/* SAT Dates Widget - Floating, draggable */}
+      <SATDatesWidget />
+      
+      {/* Show appropriate dashboard based on role */}
+      {session.user?.role === 'STUDENT' ? (
+        <StudentDashboard user={session.user} />
+      ) : (
+        <ParentDashboard />
+      )}
+    </>
   )
 }

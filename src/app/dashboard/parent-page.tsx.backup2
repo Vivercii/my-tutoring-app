@@ -1,0 +1,1056 @@
+'use client'
+
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import ParentStudentsSection from '@/components/ParentStudentsSection'
+import { HourBalanceCard } from '@/components/HourBalanceCard'
+import { PremiumUpgradeCard } from '@/components/PremiumUpgradeCard'
+import SeasonalDecoration from '@/components/SeasonalDecoration'
+import CalendarSubscription from '@/components/CalendarSubscription'
+import WelcomeModal from '@/components/WelcomeModal'
+import OnboardingFlow from '@/components/OnboardingFlow'
+import {
+  Clock,
+  Calendar,
+  TrendingUp,
+  Users,
+  CreditCard,
+  Settings,
+  ChevronRight,
+  BookOpen,
+  Award,
+  Activity,
+  UserPlus,
+  BarChart3,
+  Package,
+  TrendingDown,
+  RefreshCw
+} from 'lucide-react'
+
+function getGreeting(name: string) {
+  const hour = new Date().getHours()
+  const firstName = name?.split(' ')[0] || 'there'
+  
+  if (hour < 12) return `Good morning, ${firstName}`
+  if (hour < 17) return `Good afternoon, ${firstName}`
+  return `Good evening, ${firstName}`
+}
+
+export default function ParentDashboard() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
+  const [activeTab, setActiveTab] = useState('overview')
+  const [sessionBalance, setSessionBalance] = useState(0)
+  const [transactions, setTransactions] = useState<any[]>([])
+  const [payments, setPayments] = useState<any[]>([])
+  const [creditStats, setCreditStats] = useState({
+    totalPurchased: 0,
+    totalUsed: 0,
+  })
+  const [students, setStudents] = useState<any[]>([])
+  const [monthlySessionCount, setMonthlySessionCount] = useState(0)
+  const [showWelcome, setShowWelcome] = useState(false)
+  const [showOnboarding, setShowOnboarding] = useState(false)
+  const [onboardingStep, setOnboardingStep] = useState(1)
+  const [hasSeenWelcome, setHasSeenWelcome] = useState(true) // Default to true to avoid flash
+
+  useEffect(() => {
+    if (session) {
+      fetchSessionBalance()
+      fetchTransactionHistory()
+      checkOnboardingStatus()
+      fetchStudents()
+      fetchMonthlyStats()
+    }
+  }, [session])
+  
+  const checkOnboardingStatus = async () => {
+    try {
+      const response = await fetch('/api/users/onboarding-status')
+      if (response.ok) {
+        const data = await response.json()
+        setHasSeenWelcome(data.hasSeenWelcome)
+        setOnboardingStep(data.onboardingStep)
+        
+        // Show welcome modal if they haven't seen it
+        if (!data.hasSeenWelcome) {
+          setShowWelcome(true)
+        }
+      }
+    } catch (error) {
+      console.error('Failed to check onboarding status:', error)
+    }
+  }
+  
+  const handleWelcomeComplete = async () => {
+    setShowWelcome(false)
+    // Update the database to mark welcome as seen
+    try {
+      await fetch('/api/users/onboarding-status', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hasSeenWelcome: true })
+      })
+    } catch (error) {
+      console.error('Failed to update welcome status:', error)
+    }
+  }
+  
+  const handleStartOnboarding = () => {
+    setShowWelcome(false)
+    setShowOnboarding(true)
+    handleWelcomeComplete() // Mark welcome as seen
+  }
+  
+  const handleOnboardingStepComplete = async (step: number) => {
+    setOnboardingStep(step + 1)
+    try {
+      await fetch('/api/users/onboarding-status', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ onboardingStep: step + 1 })
+      })
+    } catch (error) {
+      console.error('Failed to update onboarding step:', error)
+    }
+  }
+  
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false)
+    setActiveTab('students') // Show students tab after onboarding
+  }
+
+  const fetchSessionBalance = async () => {
+    try {
+      const response = await fetch('/api/credits', {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache'
+        }
+      })
+      if (response.ok) {
+        const data = await response.json()
+        console.log('Credits API response:', data) // Debug log
+        setSessionBalance(data.hours || 0)
+        // Also update credit stats from this endpoint
+        setCreditStats({
+          totalPurchased: data.totalPurchased || 0,
+          totalUsed: data.totalUsed || 0,
+        })
+      }
+    } catch (error) {
+      console.error('Failed to fetch session balance:', error)
+    }
+  }
+
+  const fetchTransactionHistory = async () => {
+    try {
+      const response = await fetch('/api/credits/transactions', {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache'
+        }
+      })
+      if (response.ok) {
+        const data = await response.json()
+        console.log('Transaction API response:', data) // Debug log
+        setTransactions(data.transactions || [])
+        setPayments(data.payments || [])
+        setCreditStats({
+          totalPurchased: data.totalPurchased || 0,
+          totalUsed: data.totalUsed || 0,
+        })
+        setSessionBalance(data.currentBalance || 0)
+      }
+    } catch (error) {
+      console.error('Failed to fetch transaction history:', error)
+    }
+  }
+
+  const fetchStudents = async () => {
+    try {
+      const response = await fetch('/api/students')
+      if (response.ok) {
+        const data = await response.json()
+        setStudents(data)
+      }
+    } catch (error) {
+      console.error('Failed to fetch students:', error)
+    }
+  }
+
+  const fetchMonthlyStats = async () => {
+    try {
+      // Get current month's start and end dates
+      const now = new Date()
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+      
+      const response = await fetch(`/api/schedule?startDate=${startOfMonth.toISOString()}&endDate=${endOfMonth.toISOString()}`)
+      if (response.ok) {
+        const sessions = await response.json()
+        setMonthlySessionCount(sessions.length)
+      }
+    } catch (error) {
+      console.error('Failed to fetch monthly stats:', error)
+    }
+  }
+
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"></div>
+      </div>
+    )
+  }
+
+  if (!session) return null
+
+  const quickStats = [
+    {
+      label: 'Session Balance',
+      value: `${sessionBalance}h`,
+      icon: Clock,
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-50',
+      action: () => router.push('/dashboard/billing')
+    },
+    {
+      label: 'Active Students',
+      value: students.length.toString(),
+      icon: Users,
+      color: 'text-green-600',
+      bgColor: 'bg-green-50',
+      action: () => setActiveTab('students')
+    },
+    {
+      label: 'This Month',
+      value: `${monthlySessionCount} ${monthlySessionCount === 1 ? 'session' : 'sessions'}`,
+      icon: Calendar,
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-50',
+      action: () => router.push('/dashboard/schedule')
+    },
+    {
+      label: 'Average Score',
+      value: 'N/A',
+      icon: TrendingUp,
+      color: 'text-orange-600',
+      bgColor: 'bg-orange-50',
+      action: () => setActiveTab('progress')
+    }
+  ]
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header Section - Black to match navigation */}
+      <div className="bg-black text-white">
+        <div className="px-6 py-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h1 className="text-4xl font-light flex items-center">
+                  {getGreeting(session.user?.name || '')}
+                  <SeasonalDecoration inline={true} size={40} />
+                </h1>
+                <p className="text-gray-300 mt-2">Manage your children's learning journey</p>
+              </div>
+              
+              {/* Quick Actions */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => router.push('/dashboard/schedule')}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium transition-colors"
+                >
+                  Schedule Session
+                </button>
+                <button
+                  onClick={() => router.push('/dashboard/billing')}
+                  className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg font-medium transition-colors border border-gray-700"
+                >
+                  Buy Hours
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Quick Stats Bar - Inside black section but with cards */}
+        <div className="bg-gray-50 px-6 py-6">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid grid-cols-4 gap-4">
+              {quickStats.map((stat, index) => (
+                <button
+                  key={index}
+                  onClick={stat.action}
+                  className="bg-white hover:shadow-lg rounded-lg p-4 text-left transition-all border border-gray-200"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className={`w-10 h-10 rounded-lg ${stat.bgColor} flex items-center justify-center`}>
+                      <stat.icon className={`h-5 w-5 ${stat.color}`} />
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-gray-500" />
+                  </div>
+                  <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                  <p className="text-sm text-gray-900 font-medium">{stat.label}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="bg-gray-50">
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          {/* Tab Navigation */}
+          <div className="flex gap-1 mb-6 bg-white rounded-lg shadow-sm p-1 border border-gray-200">
+            {['overview', 'students', 'hours', 'premium'].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`flex-1 px-4 py-2 rounded-md font-medium transition-colors ${
+                  activeTab === tab
+                    ? 'bg-black text-white'
+                    : 'text-gray-800 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              </button>
+            ))}
+          </div>
+
+        {/* Tab Content */}
+        <div className="space-y-6">
+          {activeTab === 'overview' && (
+            <>
+              {/* Welcome & Quick Actions */}
+              <div className="grid md:grid-cols-3 gap-4 mb-6">
+                <div className="md:col-span-2 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-6 border border-gray-200">
+                  <h2 className="text-lg font-semibold mb-2">Quick Actions</h2>
+                  <div className="grid grid-cols-3 gap-3 mt-4">
+                    <button 
+                      onClick={() => router.push('/dashboard/schedule')}
+                      className="p-3 bg-white rounded-lg hover:shadow-md transition-all text-center"
+                    >
+                      <Calendar className="h-6 w-6 text-blue-600 mx-auto mb-1" />
+                      <span className="text-xs text-gray-700">Schedule Session</span>
+                    </button>
+                    <button 
+                      onClick={() => setActiveTab('students')}
+                      className="p-3 bg-white rounded-lg hover:shadow-md transition-all text-center"
+                    >
+                      <Users className="h-6 w-6 text-green-600 mx-auto mb-1" />
+                      <span className="text-xs text-gray-700">View Students</span>
+                    </button>
+                    <button 
+                      onClick={() => router.push('/dashboard/billing')}
+                      className="p-3 bg-white rounded-lg hover:shadow-md transition-all text-center"
+                    >
+                      <CreditCard className="h-6 w-6 text-purple-600 mx-auto mb-1" />
+                      <span className="text-xs text-gray-700">Buy Hours</span>
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Important Alerts */}
+                <div className="bg-yellow-50 rounded-lg p-6 border border-yellow-200">
+                  <h3 className="text-sm font-semibold text-yellow-900 mb-2">⚠️ Attention Needed</h3>
+                  <div className="space-y-2">
+                    <p className="text-xs text-yellow-800">• SAT registration closes in 5 days</p>
+                    <p className="text-xs text-yellow-800">• Low hour balance (5h remaining)</p>
+                    <p className="text-xs text-yellow-800">• 2 homework assignments pending review</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Recent Activity & Upcoming Sessions */}
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <Activity className="h-5 w-5 text-gray-800" />
+                    Recent Activity
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="flex items-start space-x-3 py-2 border-b">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                      <div className="flex-1">
+                        <p className="font-medium text-sm">Math tutoring completed</p>
+                        <p className="text-xs text-gray-600">Nana • 2 hours • Tutor: John Smith</p>
+                      </div>
+                      <span className="text-xs text-gray-500">2h ago</span>
+                    </div>
+                    <div className="flex items-start space-x-3 py-2 border-b">
+                      <div className="w-2 h-2 bg-green-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                      <div className="flex-1">
+                        <p className="font-medium text-sm">Practice test submitted</p>
+                        <p className="text-xs text-gray-600">Nana • Score: 1420/1600 (+30)</p>
+                      </div>
+                      <span className="text-xs text-gray-500">5h ago</span>
+                    </div>
+                    <div className="flex items-start space-x-3 py-2 border-b">
+                      <div className="w-2 h-2 bg-purple-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                      <div className="flex-1">
+                        <p className="font-medium text-sm">Homework reviewed</p>
+                        <p className="text-xs text-gray-600">Nana • Algebra II • Grade: A</p>
+                      </div>
+                      <span className="text-xs text-gray-500">1d ago</span>
+                    </div>
+                    <div className="flex items-start space-x-3 py-2">
+                      <div className="w-2 h-2 bg-orange-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                      <div className="flex-1">
+                        <p className="font-medium text-sm">Study plan updated</p>
+                        <p className="text-xs text-gray-600">Focus shifted to Reading comprehension</p>
+                      </div>
+                      <span className="text-xs text-gray-500">2d ago</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Upcoming Sessions */}
+                <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <Calendar className="h-5 w-5 text-gray-800" />
+                    Upcoming Sessions
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="p-3 bg-blue-50 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium">SAT Math Review</p>
+                          <p className="text-sm text-gray-700">Tomorrow 3:00 PM</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-medium">Nana</p>
+                          <p className="text-xs text-gray-600">2 hours</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium">Reading & Writing</p>
+                          <p className="text-sm text-gray-700">Thursday 4:00 PM</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-medium">Nana</p>
+                          <p className="text-xs text-gray-600">1.5 hours</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium">ACT Science</p>
+                          <p className="text-sm text-gray-700">Saturday 10:00 AM</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-medium">Emma</p>
+                          <p className="text-xs text-gray-600">2 hours</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => router.push('/dashboard/schedule')}
+                    className="w-full mt-4 text-center text-sm text-blue-600 hover:text-blue-700 font-medium"
+                  >
+                    View Full Schedule →
+                  </button>
+                </div>
+              </div>
+
+              {/* Calendar Subscription */}
+              <div className="mt-6">
+                {session?.user?.id && (
+                  <CalendarSubscription 
+                    userId={session.user.id}
+                    userRole="PARENT"
+                    userName={session.user.name || 'Parent'}
+                  />
+                )}
+              </div>
+
+              {/* Performance Trends & Insights */}
+              <div className="grid md:grid-cols-3 gap-6 mt-6">
+                <div className="md:col-span-2 bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5 text-gray-800" />
+                    Performance Trends
+                  </h3>
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm font-medium">Nana Wiafe</span>
+                        <span className="text-sm text-green-600">+4.2%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full" style={{width: '71%'}}></div>
+                      </div>
+                      <div className="flex justify-between mt-1">
+                        <span className="text-xs text-gray-600">Current: 1420</span>
+                        <span className="text-xs text-gray-600">Target: 1500</span>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm font-medium">Emma Johnson</span>
+                        <span className="text-sm text-green-600">+2.8%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="bg-gradient-to-r from-purple-500 to-blue-500 h-2 rounded-full" style={{width: '65%'}}></div>
+                      </div>
+                      <div className="flex justify-between mt-1">
+                        <span className="text-xs text-gray-600">Current: 32</span>
+                        <span className="text-xs text-gray-600">Target: 34</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Key Insights */}
+                <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <Award className="h-5 w-5 text-gray-800" />
+                    Key Insights
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="text-sm">
+                      <p className="font-medium text-green-600">✓ Strong Progress</p>
+                      <p className="text-xs text-gray-600">Math scores up 30 points this month</p>
+                    </div>
+                    <div className="text-sm">
+                      <p className="font-medium text-yellow-600">→ Focus Area</p>
+                      <p className="text-xs text-gray-600">Reading speed needs improvement</p>
+                    </div>
+                    <div className="text-sm">
+                      <p className="font-medium text-blue-600">↑ Recommendation</p>
+                      <p className="text-xs text-gray-600">Add 1 extra session before test</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
+          {activeTab === 'students' && (
+            <div className="space-y-6">
+              {/* Student Management Header */}
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-semibold text-gray-900">Student Management</h2>
+                <button 
+                  onClick={() => router.push('/dashboard/students')}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all flex items-center space-x-2"
+                >
+                  <UserPlus className="h-4 w-4" />
+                  <span>Add Student</span>
+                </button>
+              </div>
+
+              {/* Students Cards with Enhanced Info */}
+              <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+                <ParentStudentsSection />
+              </div>
+
+              {/* Quick Stats per Student */}
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+                  <h3 className="text-lg font-semibold mb-4">Student Progress Summary</h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div>
+                        <p className="font-medium">Nana Wiafe</p>
+                        <p className="text-xs text-gray-600">Next session: Tomorrow 3pm</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-bold text-green-600">↑ 4.2%</p>
+                        <p className="text-xs text-gray-600">This month</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div>
+                        <p className="font-medium">Emma Johnson</p>
+                        <p className="text-xs text-gray-600">Next session: Saturday 10am</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-bold text-green-600">↑ 2.8%</p>
+                        <p className="text-xs text-gray-600">This month</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+                  <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button className="p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-all text-center">
+                      <Calendar className="h-5 w-5 text-blue-600 mx-auto mb-1" />
+                      <span className="text-xs text-gray-700">Schedule Sessions</span>
+                    </button>
+                    <button className="p-3 bg-green-50 rounded-lg hover:bg-green-100 transition-all text-center">
+                      <BookOpen className="h-5 w-5 text-green-600 mx-auto mb-1" />
+                      <span className="text-xs text-gray-700">View Resources</span>
+                    </button>
+                    <button className="p-3 bg-purple-50 rounded-lg hover:bg-purple-100 transition-all text-center">
+                      <Activity className="h-5 w-5 text-purple-600 mx-auto mb-1" />
+                      <span className="text-xs text-gray-700">Progress Reports</span>
+                    </button>
+                    <button className="p-3 bg-orange-50 rounded-lg hover:bg-orange-100 transition-all text-center">
+                      <Award className="h-5 w-5 text-orange-600 mx-auto mb-1" />
+                      <span className="text-xs text-gray-700">Practice Tests</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'hours' && (
+            <div className="space-y-6">
+              {/* Current Balance and Quick Purchase */}
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      <Clock className="h-5 w-5 text-gray-800" />
+                      Hour Balance
+                    </h3>
+                    <button 
+                      onClick={() => {
+                        fetchSessionBalance()
+                        fetchTransactionHistory()
+                      }}
+                      className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+                      title="Refresh balance"
+                    >
+                      <RefreshCw className="h-4 w-4 text-gray-600" />
+                    </button>
+                  </div>
+                  <div className="text-center py-4">
+                    <p className="text-5xl font-bold text-gray-900">{sessionBalance}h</p>
+                    <p className="text-sm text-gray-600 mt-2">Available Hours</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 mt-6 pt-6 border-t">
+                    <div>
+                      <p className="text-xs text-gray-600">Total Purchased</p>
+                      <p className="text-xl font-semibold text-green-600">{creditStats.totalPurchased}h</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-600">Total Used</p>
+                      <p className="text-xl font-semibold text-orange-600">{creditStats.totalUsed}h</p>
+                    </div>
+                  </div>
+                  {sessionBalance < 5 && (
+                    <div className="mt-4 p-3 bg-yellow-50 rounded-lg">
+                      <p className="text-sm text-yellow-800">⚠️ Running low on hours</p>
+                    </div>
+                  )}
+                </div>
+                <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-6 border border-gray-200">
+                  <h3 className="text-lg font-semibold mb-4">Quick Purchase</h3>
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    <button 
+                      onClick={() => router.push('/dashboard/billing')}
+                      className="p-3 bg-white rounded-lg border border-gray-300 hover:border-blue-500 transition-all">
+                      <p className="text-xl font-bold">5h</p>
+                      <p className="text-xs text-gray-600">$1,100</p>
+                    </button>
+                    <button 
+                      onClick={() => router.push('/dashboard/billing')}
+                      className="p-3 bg-white rounded-lg border border-gray-300 hover:border-blue-500 transition-all relative">
+                      <span className="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">Save $50</span>
+                      <p className="text-xl font-bold">10h</p>
+                      <p className="text-xs text-gray-600">$700</p>
+                    </button>
+                    <button 
+                      onClick={() => router.push('/dashboard/billing')}
+                      className="p-3 bg-white rounded-lg border border-gray-300 hover:border-blue-500 transition-all relative">
+                      <span className="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">Save $200</span>
+                      <p className="text-xl font-bold">20h</p>
+                      <p className="text-xs text-gray-600">$1,300</p>
+                    </button>
+                    <button 
+                      onClick={() => router.push('/dashboard/billing')}
+                      className="p-3 bg-white rounded-lg border border-gray-300 hover:border-blue-500 transition-all relative">
+                      <span className="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">Save $600</span>
+                      <p className="text-xl font-bold">40h</p>
+                      <p className="text-xs text-gray-600">$2,400</p>
+                    </button>
+                  </div>
+                  <button 
+                    onClick={() => router.push('/dashboard/billing')}
+                    className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all"
+                  >
+                    View All Packages
+                  </button>
+                </div>
+              </div>
+
+              {/* Usage Analytics */}
+              <div className="grid md:grid-cols-3 gap-6">
+                <div className="md:col-span-2 bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <BarChart3 className="h-5 w-5 text-gray-800" />
+                    Usage History
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-2 h-8 bg-blue-500 rounded"></div>
+                        <div>
+                          <p className="font-medium text-sm">This Week</p>
+                          <p className="text-xs text-gray-600">4 sessions</p>
+                        </div>
+                      </div>
+                      <p className="text-lg font-bold">6.5h</p>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-2 h-8 bg-green-500 rounded"></div>
+                        <div>
+                          <p className="font-medium text-sm">Last Week</p>
+                          <p className="text-xs text-gray-600">5 sessions</p>
+                        </div>
+                      </div>
+                      <p className="text-lg font-bold">8h</p>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-2 h-8 bg-purple-500 rounded"></div>
+                        <div>
+                          <p className="font-medium text-sm">This Month</p>
+                          <p className="text-xs text-gray-600">18 sessions</p>
+                        </div>
+                      </div>
+                      <p className="text-lg font-bold">32h</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+                  <h3 className="text-lg font-semibold mb-4">Breakdown</h3>
+                  <div className="space-y-3">
+                    <div>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>Nana</span>
+                        <span className="font-medium">65%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="bg-blue-500 h-2 rounded-full" style={{width: '65%'}}></div>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>Emma</span>
+                        <span className="font-medium">35%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="bg-purple-500 h-2 rounded-full" style={{width: '35%'}}></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-4 pt-4 border-t">
+                    <p className="text-xs text-gray-600">Avg per session</p>
+                    <p className="text-xl font-bold">1.8h</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Transaction History - Shows all hour changes */}
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Purchase History */}
+                <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <Package className="h-5 w-5 text-gray-800" />
+                    Purchase History
+                  </h3>
+                  {payments.length > 0 ? (
+                    <div className="space-y-3 max-h-96 overflow-y-auto">
+                      {payments.map((payment) => (
+                        <div key={payment.id} className="flex items-center justify-between p-3 border-b">
+                          <div>
+                            <p className="font-medium">{payment.description}</p>
+                            <p className="text-xs text-gray-600">
+                              {new Date(payment.createdAt).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold">${payment.amount}</p>
+                            {payment.packageHours && (
+                              <p className="text-xs text-green-600">+{payment.packageHours}h</p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500">No purchases yet</p>
+                  )}
+                </div>
+
+                {/* Transaction Log - Shows all balance changes */}
+                <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      <Activity className="h-5 w-5 text-gray-800" />
+                      Transaction Log
+                    </h3>
+                    <button 
+                      onClick={fetchTransactionHistory}
+                      className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+                      title="Refresh transactions"
+                    >
+                      <RefreshCw className="h-4 w-4 text-gray-600" />
+                    </button>
+                  </div>
+                  <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                    <div className="grid grid-cols-3 gap-2 text-sm">
+                      <div>
+                        <p className="text-xs text-gray-600">Current Balance</p>
+                        <p className="text-lg font-bold text-gray-900">{sessionBalance}h</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-600">Total Purchased</p>
+                        <p className="text-lg font-bold text-green-600">{creditStats.totalPurchased}h</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-600">Total Used</p>
+                        <p className="text-lg font-bold text-orange-600">{creditStats.totalUsed}h</p>
+                      </div>
+                    </div>
+                  </div>
+                  {transactions.length > 0 ? (
+                    <div className="space-y-2 max-h-80 overflow-y-auto">
+                      {transactions.map((transaction) => (
+                        <div key={transaction.id} className="p-2 border-b text-sm">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2">
+                              <div className={`w-2 h-2 rounded-full ${
+                                transaction.type === 'PURCHASE' ? 'bg-green-500' : 
+                                transaction.type === 'USAGE' ? 'bg-orange-500' : 
+                                transaction.type === 'REFUND' ? 'bg-blue-500' : 'bg-gray-500'
+                              }`}></div>
+                              <span className="font-medium">{transaction.description}</span>
+                            </div>
+                            <span className={`font-bold ${
+                              transaction.hours > 0 ? 'text-green-600' : 'text-orange-600'
+                            }`}>
+                              {transaction.hours > 0 ? '+' : ''}{transaction.hours}h
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-xs text-gray-500 mt-1 ml-4">
+                            <span>{new Date(transaction.createdAt).toLocaleString()}</span>
+                            <span>Balance: {transaction.balanceBefore}h → {transaction.balanceAfter}h</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500">No transactions yet</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'premium' && (
+            <div className="space-y-6">
+              {/* Premium Features Overview */}
+              <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg p-8 text-white">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-3xl font-bold mb-2">UpstartPrep Premium</h2>
+                    <p className="text-purple-100">Unlock exclusive features for accelerated learning</p>
+                  </div>
+                  <Award className="h-16 w-16 text-yellow-300" />
+                </div>
+              </div>
+
+              {/* Premium Features Grid */}
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+                  <div className="flex items-start space-x-3">
+                    <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Users className="h-5 w-5 text-purple-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-lg mb-2">Elite Tutors</h3>
+                      <p className="text-sm text-gray-600 mb-3">Access to our top 1% rated tutors with proven track records</p>
+                      <ul className="text-xs text-gray-700 space-y-1">
+                        <li>• 99th percentile scorers</li>
+                        <li>• Ivy League graduates</li>
+                        <li>• Specialized expertise</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+                  <div className="flex items-start space-x-3">
+                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <BookOpen className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-lg mb-2">Unlimited Practice Tests</h3>
+                      <p className="text-sm text-gray-600 mb-3">Full-length adaptive practice tests with detailed analytics</p>
+                      <ul className="text-xs text-gray-700 space-y-1">
+                        <li>• 50+ official practice tests</li>
+                        <li>• Instant scoring & analysis</li>
+                        <li>• Video explanations</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+                  <div className="flex items-start space-x-3">
+                    <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <TrendingUp className="h-5 w-5 text-green-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-lg mb-2">AI Progress Tracking</h3>
+                      <p className="text-sm text-gray-600 mb-3">Advanced analytics and personalized study recommendations</p>
+                      <ul className="text-xs text-gray-700 space-y-1">
+                        <li>• Predictive score modeling</li>
+                        <li>• Weakness identification</li>
+                        <li>• Custom study plans</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+                  <div className="flex items-start space-x-3">
+                    <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Calendar className="h-5 w-5 text-orange-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-lg mb-2">Priority Scheduling</h3>
+                      <p className="text-sm text-gray-600 mb-3">Book sessions up to 30 days in advance with instant confirmation</p>
+                      <ul className="text-xs text-gray-700 space-y-1">
+                        <li>• Same-day emergency sessions</li>
+                        <li>• Weekend priority slots</li>
+                        <li>• Flexible rescheduling</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Special Programs */}
+              <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg p-6 border border-gray-200">
+                <h3 className="text-lg font-semibold mb-4">Exclusive Premium Programs</h3>
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div className="bg-white rounded-lg p-4">
+                    <h4 className="font-semibold text-sm mb-2">SAT Boot Camp</h4>
+                    <p className="text-xs text-gray-600 mb-2">2-week intensive prep</p>
+                    <p className="text-lg font-bold text-blue-600">$2,499</p>
+                    <p className="text-xs text-gray-500 line-through">$3,499</p>
+                  </div>
+                  <div className="bg-white rounded-lg p-4">
+                    <h4 className="font-semibold text-sm mb-2">College Essays</h4>
+                    <p className="text-xs text-gray-600 mb-2">1-on-1 essay coaching</p>
+                    <p className="text-lg font-bold text-blue-600">$999</p>
+                    <p className="text-xs text-gray-500 line-through">$1,499</p>
+                  </div>
+                  <div className="bg-white rounded-lg p-4">
+                    <h4 className="font-semibold text-sm mb-2">AP Exam Prep</h4>
+                    <p className="text-xs text-gray-600 mb-2">Subject-specific tutoring</p>
+                    <p className="text-lg font-bold text-blue-600">$1,299</p>
+                    <p className="text-xs text-gray-500 line-through">$1,799</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* CTA */}
+              {!session.user?.isPremium ? (
+                <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200 text-center">
+                  <h3 className="text-2xl font-bold mb-2">Upgrade to Premium</h3>
+                  <p className="text-gray-600 mb-6">Join thousands of students achieving their dream scores</p>
+                  <div className="flex justify-center gap-4 mb-6">
+                    <div className="text-center">
+                      <p className="text-3xl font-bold text-gray-900">$99</p>
+                      <p className="text-sm text-gray-600">/month</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-3xl font-bold text-gray-900">$999</p>
+                      <p className="text-sm text-gray-600">/year</p>
+                      <p className="text-xs text-green-600 font-semibold">Save $189</p>
+                    </div>
+                  </div>
+                  <button className="px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all font-semibold">
+                    Start 7-Day Free Trial
+                  </button>
+                  <p className="text-xs text-gray-500 mt-3">No credit card required • Cancel anytime</p>
+                </div>
+              ) : (
+                <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg p-6 border border-yellow-200">
+                  <div className="flex items-center gap-3">
+                    <Award className="h-8 w-8 text-yellow-600" />
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-900">Premium Active</h3>
+                      <p className="text-gray-700">You have access to all premium features! Member since Nov 2024</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+          {/* Quick Links Footer */}
+          <div className="mt-12 grid grid-cols-4 gap-4">
+            <button
+              onClick={() => router.push('/dashboard/billing')}
+              className="p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow text-center border border-gray-200"
+            >
+              <CreditCard className="h-6 w-6 text-gray-800 mx-auto mb-2" />
+              <p className="text-sm font-medium">Billing</p>
+            </button>
+            <button
+              onClick={() => router.push('/dashboard/schedule')}
+              className="p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow text-center border border-gray-200"
+            >
+              <Calendar className="h-6 w-6 text-gray-800 mx-auto mb-2" />
+              <p className="text-sm font-medium">Schedule</p>
+            </button>
+            <button
+              onClick={() => router.push('/dashboard/reports')}
+              className="p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow text-center border border-gray-200"
+            >
+              <BookOpen className="h-6 w-6 text-gray-800 mx-auto mb-2" />
+              <p className="text-sm font-medium">Reports</p>
+            </button>
+            <button
+              onClick={() => router.push('/dashboard/settings')}
+              className="p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow text-center border border-gray-200"
+            >
+              <Settings className="h-6 w-6 text-gray-800 mx-auto mb-2" />
+              <p className="text-sm font-medium">Settings</p>
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      {/* Welcome Modal */}
+      {showWelcome && (
+        <WelcomeModal
+          userName={session.user?.name || undefined}
+          onComplete={handleWelcomeComplete}
+          onStartOnboarding={handleStartOnboarding}
+        />
+      )}
+      
+      {/* Onboarding Flow */}
+      {showOnboarding && (
+        <OnboardingFlow
+          userId={session.user?.id || ''}
+          currentStep={onboardingStep}
+          onStepComplete={handleOnboardingStepComplete}
+          onComplete={handleOnboardingComplete}
+        />
+      )}
+    </div>
+  )
+}

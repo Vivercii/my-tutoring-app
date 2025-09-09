@@ -45,11 +45,18 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { name } = body
+    const { name, program } = body
 
     if (!name || name.trim().length === 0) {
       return NextResponse.json(
         { error: 'Student name is required' },
+        { status: 400 }
+      )
+    }
+
+    if (!program) {
+      return NextResponse.json(
+        { error: 'Program selection is required' },
         { status: 400 }
       )
     }
@@ -65,6 +72,7 @@ export async function POST(request: NextRequest) {
     const student = await prisma.student.create({
       data: {
         name: name.trim(),
+        program: program,
         userId: user.id
       }
     })

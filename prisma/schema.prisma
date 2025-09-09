@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,67 +7,527 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id                String              @id @default(cuid())
+  email             String?             @unique
+  name              String?
+  hashedPassword    String?
+  role              Role
+  inviteKey         String?             @unique
+  stripeCustomerId  String?             @unique
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  isActive          Boolean             @default(true)
+  isAdmin           Boolean             @default(false)
+  isPremium         Boolean             @default(false)
+  premiumSince      DateTime?
+  premiumValidUntil DateTime?
+  lastLoginAt       DateTime?
+  address           String?
+  city              String?
+  country           String?             @default("USA")
+  phoneNumber       String?
+  preferredContact  String?             @default("email")
+  state             String?
+  timezone          String?             @default("America/New_York")
+  zipCode           String?
+  zoomLink          String?
+  calendarToken     String?             @unique @default(cuid())
+  hasSeenWelcome    Boolean             @default(false)
+  onboardingStep    Int                 @default(0)
+  activities        Activity[]
+  examAssignments   ExamAssignment[]
+  managedStudents   ParentStudent[]     @relation("ParentStudents")
+  payments          Payment[]
+  programAccess     ProgramAccess[]
+  scheduledSessions ScheduledSession[]
+  credits           SessionCredit?
+  studentProfile    StudentProfile?     @relation("StudentProfile")
+  tutorAvailability TutorAvailability[]
+  tutorProfile      TutorProfile?       @relation("TutorProfile")
+  tutors            TutorStudent[]      @relation("StudentTutors")
+  taughtStudents    TutorStudent[]      @relation("TutorStudents")
+}
+
+model StudentProfile {
+  id                String             @id @default(cuid())
+  studentId         String             @unique
+  program           Program            @default(ACADEMIC_SUPPORT)
+  gradeLevel        String?
+  school            String?
+  targetScore       String?
+  currentScore      String?
+  academicGoals     String?
+  strengths         String?
+  weaknesses        String?
+  preferredSchedule String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  parents           ParentStudent[]
+  scheduledSessions ScheduledSession[]
+  sessionLogs       SessionLog[]
+  student           User               @relation("StudentProfile", fields: [studentId], references: [id])
+}
+
+model ParentStudent {
+  id               String         @id @default(cuid())
+  parentId         String
+  studentProfileId String
+  relationshipType String?
+  isPrimary        Boolean        @default(false)
+  canManageAccount Boolean        @default(true)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  parent           User           @relation("ParentStudents", fields: [parentId], references: [id])
+  studentProfile   StudentProfile @relation(fields: [studentProfileId], references: [id])
+
+  @@unique([parentId, studentProfileId])
+}
+
+model SessionLog {
+  id               String         @id @default(cuid())
+  subject          String
+  tutorName        String
+  date             DateTime
+  duration         Float
+  notes            String?
+  score            String?
+  rating           Int?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  studentProfileId String
+  studentProfile   StudentProfile @relation(fields: [studentProfileId], references: [id])
+}
+
+model Activity {
+  id          String   @id @default(cuid())
+  type        String
+  description String
+  timestamp   DateTime @default(now())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+model SessionCredit {
+  id               String   @id @default(cuid())
+  hours            Float    @default(0)  // Current balance
+  totalPurchased   Float    @default(0)  // Total hours ever purchased
+  totalUsed        Float    @default(0)  // Total hours ever used
+  userId           String   @unique
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  user             User     @relation(fields: [userId], references: [id])
+  transactions     HourTransaction[]
+}
+
+model HourTransaction {
+  id               String   @id @default(cuid())
+  type             String   // "PURCHASE", "USAGE", "REFUND", "ADJUSTMENT"
+  hours            Float    // Positive for additions, negative for deductions
+  balanceBefore    Float    // Balance before this transaction
+  balanceAfter     Float    // Balance after this transaction
+  description      String   // Description of transaction
+  stripePaymentId  String?  // Link to Stripe payment if applicable
+  sessionId        String?  // Link to tutoring session if usage
+  userId           String
+  creditId         String
+  createdAt        DateTime @default(now())
+  credit           SessionCredit @relation(fields: [creditId], references: [id])
+  
+  @@index([userId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+model Payment {
+  id              String   @id @default(cuid())
+  amount          Float
+  currency        String   @default("USD")
+  status          String
+  description     String?
+  stripePaymentId String?  @unique
+  packageHours    Float?   // Hours included in this payment
+  metadata        Json?    // Store additional payment details
+  userId          String
+  createdAt       DateTime @default(now())
+  user            User     @relation(fields: [userId], references: [id])
+}
+
+model ProgramAccess {
+  id        String   @id @default(cuid())
+  userId    String
+  program   Program
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, program])
+}
+
+model TutorStudent {
+  id        String   @id @default(cuid())
+  tutorId   String
+  studentId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  student   User     @relation("StudentTutors", fields: [studentId], references: [id])
+  tutor     User     @relation("TutorStudents", fields: [tutorId], references: [id])
+
+  @@unique([tutorId, studentId])
+}
+
+model TutorAvailability {
+  id        String   @id @default(cuid())
+  tutorId   String
+  dayOfWeek Int
+  startTime String
+  endTime   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  tutor     User     @relation(fields: [tutorId], references: [id])
+
+  @@unique([tutorId, dayOfWeek, startTime])
+}
+
+model ScheduledSession {
+  id               String         @id @default(cuid())
+  startTime        DateTime
+  endTime          DateTime
+  status           String         @default("CONFIRMED")
+  zoomLink         String?
+  notes            String?
+  studentProfileId String
+  tutorId          String
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  studentProfile   StudentProfile @relation(fields: [studentProfileId], references: [id])
+  tutor            User           @relation(fields: [tutorId], references: [id])
+}
+
+model TutorProfile {
+  id              String    @id @default(cuid())
+  tutorId         String    @unique
+  bio             String?
+  hourlyRate      Float?
+  experienceYears Int?
+  education       String?
+  certifications  String[]
+  subjects        String[]
+  gradeLevels     String[]
+  programs        Program[]
+  languages       String[]
+  specializations String[]
+  maxStudents     Int?      @default(10)
+  preferredAgeMin Int?
+  preferredAgeMax Int?
+  totalSessions   Int       @default(0)
+  averageRating   Float?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  tutor           User      @relation("TutorProfile", fields: [tutorId], references: [id])
+}
+
+model MarketingBanner {
+  id          String   @id @default(cuid())
+  title       String
+  linkUrl     String?
+  isActive    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  cssContent  String
+  htmlContent String
+}
+
+model Exam {
+  id          String           @id @default(cuid())
+  title       String
+  description String?
+  program     Program
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  examNumber  Int?
+  examType    ExamType         @default(PRACTICE_TEST)
+  isPublished Boolean          @default(false)
+  subProgram  String?
+  tags        String[]
+  timeLimit   Int?
+  assignments ExamAssignment[]
+  sections    ExamSection[]
+
+  @@index([program, examType])
+  @@index([program, subProgram])
+  @@index([isPublished])
+}
+
+model ExamSection {
+  id      String       @id @default(cuid())
+  title   String
+  order   Int
+  examId  String
+  modules ExamModule[]
+  exam    Exam         @relation(fields: [examId], references: [id], onDelete: Cascade)
+
+  @@unique([examId, order])
+}
+
+model ExamModule {
+  id           String         @id @default(cuid())
+  title        String?
+  order        Int
+  timeLimit    Int?
+  sectionId    String
+  moduleType   ModuleType     @default(STANDARD) // New field for adaptive logic
+  difficulty   ModuleDifficulty? // Easy/Hard for Module 2
+  section      ExamSection    @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  questions    ExamQuestion[]
+
+  @@unique([sectionId, order])
+}
+
+model Domain {
+  id          String             @id @default(cuid())
+  name        String             @unique
+  code        String             @unique // ALG, ADV, PSA, GEO
+  description String?
+  order       Int                @default(0)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  skills      Skill[]
+  questions   QuestionBankItem[]
+}
+
+model Skill {
+  id             String             @id @default(cuid())
+  domainId       String
+  domain         Domain             @relation(fields: [domainId], references: [id])
+  name           String
+  description    String?
+  meanImportance Float?             // From SAT guide (e.g., 3.77)
+  stdDeviation   Float?             // Standard deviation from guide
+  order          Int                @default(0)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  questions      QuestionBankItem[]
+  
+  @@unique([domainId, name])
+  @@index([meanImportance])
+}
+
+model Passage {
+  id               String             @id @default(cuid())
+  title            String
+  content          String
+  passageText      String?            @db.Text
+  fullHtml         String?            @db.Text
+  hasVisualContent Boolean            @default(false)
+  hasUnderline     Boolean            @default(false)
+  program          Program
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  questions        QuestionBankItem[]
+}
+
+model QuestionBankItem {
+  id            String         @id @default(cuid())
+  program       Program
+  subject       String
+  topic         String?
+  difficulty    String?
+  questionText  String
+  questionType  QuestionType   @default(MULTIPLE_CHOICE)
+  points        Int            @default(1)
+  explanation   String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  passageId     String?
+  questionCode  String?        @unique
+  
+  // SAT Domain Classification
+  domainId      String?
+  domain        Domain?        @relation(fields: [domainId], references: [id])
+  skillId       String?
+  skill         Skill?         @relation(fields: [skillId], references: [id])
+  
+  // Internal/Draft tracking
+  isActive      Boolean        @default(true)
+  isInternal    Boolean        @default(false)
+  metadata      Json?
+  
+  options       AnswerOption[]
+  examQuestions ExamQuestion[]
+  passage       Passage?       @relation(fields: [passageId], references: [id])
+
+  @@index([questionCode])
+  @@index([program, subject, difficulty])
+  @@index([program, topic])
+  @@index([createdAt])
+  @@index([domainId])
+  @@index([skillId])
+  @@index([isInternal])
+}
+
+model ExamQuestion {
+  id             String           @id @default(cuid())
+  order          Int
+  moduleId       String
+  questionId     String
+  module         ExamModule       @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  question       QuestionBankItem @relation(fields: [questionId], references: [id])
+  studentAnswers StudentAnswer[]
+
+  @@unique([moduleId, order])
+  @@unique([moduleId, questionId])
+}
+
+model AnswerOption {
+  id         String           @id @default(cuid())
+  text       String
+  isCorrect  Boolean          @default(false)
+  questionId String
+  question   QuestionBankItem @relation(fields: [questionId], references: [id], onDelete: Cascade)
+}
+
+model ExamAssignment {
+  id             String          @id @default(cuid())
+  assignedAt     DateTime        @default(now())
+  status         String          @default("PENDING")
+  score          Float?
+  startedAt      DateTime?
+  completedAt    DateTime?
+  studentId      String
+  examId         String
+  
+  // Adaptive tracking
+  module1Score   Int?            // Score on Module 1 (routing)
+  adaptivePath   ModuleDifficulty? // Which Module 2 they got (EASY/HARD)
+  currentModuleId String?         // Track current module during exam
+  
+  exam           Exam            @relation(fields: [examId], references: [id])
+  student        User            @relation(fields: [studentId], references: [id])
+  studentAnswers StudentAnswer[]
+
+  @@unique([studentId, examId])
+}
+
+model StudentAnswer {
+  id              String         @id @default(cuid())
+  submittedAnswer String
+  isCorrect       Boolean?
+  assignmentId    String
+  examQuestionId  String
+  pointsEarned    Float?
+  assignment      ExamAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  examQuestion    ExamQuestion   @relation(fields: [examQuestionId], references: [id], onDelete: Cascade)
+
+  @@unique([assignmentId, examQuestionId])
+}
+
 enum Role {
   PARENT
   STUDENT
   INSTITUTION
+  TUTOR
+  PROGRAM_COORDINATOR
 }
 
-// Represents the parent/client account
-model User {
-  id             String    @id @default(cuid())
-  email          String    @unique
-  name           String?
-  hashedPassword String?
-  role           Role      @default(PARENT)
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  
-  // A User (parent) can have multiple students
-  students       Student[]
-  // A User can have multiple activities
-  activities     Activity[]
+enum Program {
+  SAT
+  ACT
+  ISEE
+  SSAT
+  GRE
+  DAT
+  HSPT
+  ACADEMIC_SUPPORT
 }
 
-// Represents an individual student, linked to a User account
-model Student {
-  id        String   @id @default(cuid())
-  name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relation to the User model (the parent)
-  user   User   @relation(fields: [userId], references: [id])
-  userId String
-  
-  // A student can have multiple session logs
-  sessionLogs SessionLog[]
+enum ExamType {
+  PRACTICE_TEST
+  HOMEWORK
+  QUIZ
+  DIAGNOSTIC
+  CUSTOM
 }
 
-// Tracks completed tutoring sessions
-model SessionLog {
-  id        String   @id @default(cuid())
-  subject   String
-  tutor     String
-  date      DateTime
-  duration  Int      // in minutes
-  notes     String?
-  rating    Int?
-  createdAt DateTime @default(now())
-  
-  // Relation to Student
-  student   Student  @relation(fields: [studentId], references: [id])
-  studentId String
+enum QuestionType {
+  MULTIPLE_CHOICE
+  FREE_RESPONSE
+  SHORT_ANSWER
+  ESSAY
 }
 
-// Tracks user activities
-model Activity {
-  id          String   @id @default(cuid())
-  type        String   // e.g., "session_completed", "payment", "message", "session_booked"
-  description String
-  timestamp   DateTime @default(now())
-  userId      String
+enum ModuleType {
+  STANDARD  // Regular non-adaptive module
+  ROUTING   // Module 1 that determines difficulty
+  ADAPTIVE  // Module 2 that varies by performance
+}
+
+enum ModuleDifficulty {
+  EASY
+  HARD
+}
+
+model ZoomClick {
+  id                   String   @id @default(cuid())
+  userId               String
+  userEmail            String
+  userName             String
+  sessionId            String?
+  sessionSubject       String
+  sessionTime          DateTime
+  clickedAt            DateTime @default(now())
+  minutesBeforeSession Int
+  zoomLink             String
+  ipAddress            String?
+  userAgent            String?
+  createdAt            DateTime @default(now())
   
-  // Relation to User
-  user        User     @relation(fields: [userId], references: [id])
+  @@index([userEmail])
+  @@index([clickedAt])
+}
+
+model Message {
+  id               String   @id @default(cuid())
+  senderId         String
+  senderEmail      String
+  senderName       String
+  senderRole       Role
+  recipientId      String?  // Instructor ID
+  recipientEmail   String?  // Instructor email
+  recipientName    String?  // Instructor name
+  studentId        String   // Student involved in conversation
+  studentEmail     String
+  studentName      String
+  content          String
+  attachments      String[] // URLs to attachments
+  isRead           Boolean  @default(false)
+  isReadByInstructor Boolean @default(false)
+  isReadByCoordinator Boolean @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  @@index([senderId])
+  @@index([recipientId])
+  @@index([studentId])
+  @@index([createdAt])
+}
+
+model MessageThread {
+  id              String   @id @default(cuid())
+  studentId       String
+  studentEmail    String
+  studentName     String
+  instructorId    String?
+  instructorEmail String?
+  instructorName  String?
+  lastMessage     String?
+  lastMessageAt   DateTime?
+  unreadCount     Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@unique([studentId, instructorId])
+  @@index([studentId])
+  @@index([instructorId])
+  @@index([lastMessageAt])
 }
