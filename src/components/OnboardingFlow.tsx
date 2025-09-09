@@ -430,8 +430,9 @@ export default function OnboardingFlow({ userId, currentStep, onStepComplete, on
       {/* Add Student Modal */}
       {showAddStudent && (
         <AddStudentModal
+          isOpen={showAddStudent}
           onClose={() => setShowAddStudent(false)}
-          onStudentAdded={handleStudentAdded}
+          onSuccess={handleStudentAdded}
         />
       )}
     </div>

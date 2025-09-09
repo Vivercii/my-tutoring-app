@@ -47,7 +47,18 @@ interface User {
 }
 
 // Stats card component
-const StatCard = ({ icon: Icon, title, value, change, color = 'blue', onClick }: any) => {
+type ColorType = 'blue' | 'green' | 'purple' | 'yellow' | 'red' | 'cyan';
+
+interface StatCardProps {
+  icon: React.ElementType;
+  title: string;
+  value: number;
+  change?: number;
+  color?: ColorType;
+  onClick?: () => void;
+}
+
+const StatCard = ({ icon: Icon, title, value, change, color = 'blue', onClick }: StatCardProps) => {
   const colorClasses = {
     blue: 'bg-blue-500/10 text-blue-400 border-blue-500/20 hover:bg-blue-500/20',
     green: 'bg-green-500/10 text-green-400 border-green-500/20 hover:bg-green-500/20',
@@ -78,7 +89,17 @@ const StatCard = ({ icon: Icon, title, value, change, color = 'blue', onClick }:
 }
 
 // User card component (compact version)
-const UserCard = ({ user, onEdit, onToggleActive, onToggleAdmin, onMasquerade, onView, actionLoading }: any) => {
+interface UserCardProps {
+  user: User;
+  onEdit: (user: User) => void;
+  onToggleActive: (userId: string, currentStatus: boolean) => void;
+  onToggleAdmin: (userId: string, currentStatus: boolean) => void;
+  onMasquerade: (user: User) => void;
+  onView: (user: User) => void;
+  actionLoading: string | null;
+}
+
+const UserCard = ({ user, onEdit, onToggleActive, onToggleAdmin, onMasquerade, onView, actionLoading }: UserCardProps) => {
   const [showMenu, setShowMenu] = useState(false)
   
   const roleColors = {

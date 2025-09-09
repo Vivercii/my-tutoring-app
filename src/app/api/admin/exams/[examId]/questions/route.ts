@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 // POST /api/admin/exams/[examId]/questions - Create a new question
@@ -33,12 +33,13 @@ export async function POST(
     }
 
     // Create question with options if it's multiple choice
-    const question = await prisma.question.create({
+    const question = await prisma.questionBankItem.create({
       data: {
-        text,
-        type,
+        questionText: text,
+        questionType: type,
         points: points || 1,
-        examId,
+        program: 'SAT', // Default program, you might want to make this configurable
+        subject: 'General', // Default subject, you might want to make this configurable
         ...(type === 'MULTIPLE_CHOICE' && options && options.length > 0 && {
           options: {
             create: options.map((option: { text: string; isCorrect: boolean }) => ({

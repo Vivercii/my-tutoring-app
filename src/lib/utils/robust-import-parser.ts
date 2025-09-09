@@ -18,6 +18,7 @@ export interface ParsedQuestion {
   }[]
   correctAnswer: string
   explanation: string
+  points?: number
   program?: string
   subject?: string
   topic?: string
@@ -481,13 +482,16 @@ export function convertToQuestionBankFormat(parsedQuestions: ParsedQuestion[], d
     program: q.program || defaults.program,
     subject: q.subject || defaults.subject,
     topic: q.topic || defaults.topic,
-    difficulty: q.difficulty || defaults.difficulty,
+    difficulty: (q.difficulty || defaults.difficulty) as 'EASY' | 'MEDIUM' | 'HARD',
+    questionHtml: q.questionHtml,
     questionText: q.questionText,
     questionType: q.questionType,
     points: 1,
     explanation: q.explanation,
     correctAnswer: q.correctAnswer,
     options: q.options ? q.options.map(opt => ({
+      letter: opt.letter,
+      html: opt.html,
       text: opt.text,
       isCorrect: opt.isCorrect
     })) : []

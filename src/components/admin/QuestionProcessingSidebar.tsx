@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { 
-  X, ChevronRight, ChevronLeft, Sparkles, Check, AlertCircle, 
+  X, ChevronRight, ChevronLeft, Sparkles, Check, AlertCircle, CheckCircle,
   RefreshCw, Save, Copy, Edit2, Brain, BookOpen, Target,
   Zap, ChevronDown, ChevronUp, Loader2
 } from 'lucide-react'
@@ -23,17 +23,19 @@ const QuestionPreview = dynamic(() => import('@/components/admin/QuestionPreview
 interface ParsedQuestion {
   id?: string
   questionText: string
-  questionType: 'MULTIPLE_CHOICE' | 'SHORT_ANSWER'
-  options?: Array<{
+  questionHtml: string
+  questionType: 'MULTIPLE_CHOICE' | 'SHORT_ANSWER' | 'FREE_RESPONSE' | 'ESSAY'
+  options: Array<{
     letter: string
+    html: string
     text: string
     isCorrect: boolean
   }>
-  correctAnswer?: string
-  explanation?: string
+  correctAnswer: string
+  explanation: string
   program?: string
   subject?: string
-  difficulty?: string
+  difficulty?: 'EASY' | 'MEDIUM' | 'HARD'
 }
 
 interface Classification {

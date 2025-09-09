@@ -86,7 +86,7 @@ export default function ModuleQuestionsPage() {
         const data = await response.json()
         setModuleData(data)
         // Auto-expand all questions by default
-        const allQuestionIds = new Set(data.module.questions.map((q: ExamQuestion) => q.id))
+        const allQuestionIds = new Set<string>(data.module.questions.map((q: ExamQuestion) => q.id))
         setExpandedQuestions(allQuestionIds)
       }
     } catch (error) {

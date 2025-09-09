@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '../auth/[...nextauth]/route'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 export async function POST(request: NextRequest) {
@@ -32,11 +32,11 @@ export async function POST(request: NextRequest) {
       rating 
     } = body
 
-    // Verify the student belongs to the user
-    const student = await prisma.student.findFirst({
+    // Verify the student exists
+    const student = await prisma.user.findFirst({
       where: {
         id: studentId,
-        userId: user.id
+        role: 'STUDENT'
       }
     })
 
@@ -47,10 +47,24 @@ export async function POST(request: NextRequest) {
     // Convert duration from minutes to hours for storage
     const durationInHours = Math.round((duration / 60) * 10) / 10
 
+    // Get or create student profile
+    let studentProfile = await prisma.studentProfile.findUnique({
+      where: { studentId: student.id }
+    })
+    
+    if (!studentProfile) {
+      studentProfile = await prisma.studentProfile.create({
+        data: {
+          studentId: student.id,
+          program: 'ACADEMIC_SUPPORT'
+        }
+      })
+    }
+
     // Create the session log
     const sessionLog = await prisma.sessionLog.create({
       data: {
-        studentId: student.id,
+        studentProfileId: studentProfile.id,
         subject: subject.trim(),
         tutorName: tutorName.trim(),
         date: new Date(date),

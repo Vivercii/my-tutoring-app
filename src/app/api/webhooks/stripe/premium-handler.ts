@@ -72,9 +72,9 @@ export async function handlePremiumPurchase(
         // STANDALONE PREMIUM: Set up based on subscription
         const subscription = await stripe.subscriptions.retrieve(
           session.subscription as string
-        )
+        ) as Stripe.Subscription
 
-        const premiumValidUntil = new Date(subscription.current_period_end * 1000)
+        const premiumValidUntil = new Date((subscription as any).current_period_end * 1000)
 
         await prisma.user.update({
           where: { id: userId },
@@ -101,7 +101,7 @@ export async function handlePremiumPurchase(
         })
 
         if (customer) {
-          const premiumValidUntil = new Date(subscription.current_period_end * 1000)
+          const premiumValidUntil = new Date((subscription as any).current_period_end * 1000)
           
           await prisma.user.update({
             where: { id: customer.id },
@@ -128,11 +128,11 @@ export async function handlePremiumPurchase(
       if (customer) {
         // Check if they have active tutoring credits
         const credits = await prisma.sessionCredit.findUnique({
-          where: { studentId: customer.id }
+          where: { userId: customer.id }
         })
 
         // Only remove premium if they don't have tutoring credits
-        if (!credits || credits.remainingSessions === 0) {
+        if (!credits || credits.hours === 0) {
           await prisma.user.update({
             where: { id: customer.id },
             data: {
@@ -171,7 +171,7 @@ export async function checkAndUpdatePremiumStatus(userId: string) {
   }
 
   // Check tutoring credits
-  if (user.credits && user.credits.remainingSessions > 0) {
+  if (user.credits && user.credits.hours > 0) {
     shouldHavePremium = true
     // Extend premium if they have credits but subscription expired
     if (!validUntil || validUntil < new Date()) {

@@ -1,16 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { authOptions } from '@/lib/auth'
 import { PrismaClient, ModuleType, ModuleDifficulty } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { examId: string } }
+  { params }: { params: Promise<{ examId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
+    const { examId } = await params
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -22,7 +23,7 @@ export async function POST(
       where: {
         studentId_examId: {
           studentId: session.user.id,
-          examId: params.examId
+          examId: examId
         }
       }
     })

@@ -2,7 +2,7 @@
 
 export function convertMathMLToLatex(html: string): string {
   // Common MathML to LaTeX conversions
-  const conversions: [RegExp, string][] = [
+  const conversions: [RegExp, string | ((match: string, ...args: any[]) => string)][] = [
     // Basic math elements
     [/<math[^>]*>(.*?)<\/math>/gis, (match, content) => {
       return `$${convertMathMLContent(content)}$`
@@ -16,7 +16,7 @@ export function convertMathMLToLatex(html: string): string {
     if (typeof replacement === 'string') {
       result = result.replace(pattern, replacement)
     } else {
-      result = result.replace(pattern, replacement as any)
+      result = result.replace(pattern, replacement)
     }
   }
   

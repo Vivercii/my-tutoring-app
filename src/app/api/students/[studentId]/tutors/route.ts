@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 // GET: Fetch tutors assigned to a specific student
@@ -98,7 +98,7 @@ export async function GET(
           endTime: true
         }
       })
-      tutor.scheduledSessions = sessions
+      ;(tutor as any).scheduledSessions = sessions
     }
 
     return NextResponse.json(tutors)

@@ -71,7 +71,7 @@ const StatCard = ({ icon: Icon, title, value, change, color = 'blue' }: any) => 
   }
 
   return (
-    <div className={`p-4 rounded-xl border ${colorClasses[color]} backdrop-blur-sm`}>
+    <div className={`p-4 rounded-xl border ${colorClasses[color as keyof typeof colorClasses] || colorClasses.blue} backdrop-blur-sm`}>
       <div className="flex items-center justify-between mb-2">
         <Icon className="h-5 w-5" />
         {change !== undefined && (
@@ -132,7 +132,7 @@ const UserCard = ({ user, onEdit, onToggleActive, onToggleAdmin, onMasquerade, o
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center space-x-4">
             {/* Avatar */}
-            <div className={`w-12 h-12 rounded-xl ${roleColors[user.role]} flex items-center justify-center font-semibold`}>
+            <div className={`w-12 h-12 rounded-xl ${roleColors[user.role as keyof typeof roleColors] || roleColors.STUDENT} flex items-center justify-center font-semibold`}>
               {getInitials(user.name, user.email)}
             </div>
             
@@ -211,7 +211,7 @@ const UserCard = ({ user, onEdit, onToggleActive, onToggleAdmin, onMasquerade, o
         
         {/* Badges */}
         <div className="flex flex-wrap gap-2 mb-4">
-          <span className={`px-2 py-1 rounded-lg text-xs ${roleColors[user.role]} border`}>
+          <span className={`px-2 py-1 rounded-lg text-xs ${roleColors[user.role as keyof typeof roleColors] || roleColors.STUDENT} border`}>
             {user.role}
           </span>
           {user.studentProfile?.program && (

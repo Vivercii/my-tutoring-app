@@ -818,7 +818,7 @@ export default function StudentExamTakePage() {
     if (!currentQuestion || !assignmentId) return
     
     // Use base question ID for consistency
-    const baseQuestionId = currentQuestion.question.question ? currentQuestion.question.question.id : currentQuestion.question.id
+    const baseQuestionId = currentQuestion.question.id
     const newFlagged = new Set(flaggedQuestions)
     
     if (newFlagged.has(baseQuestionId)) {
@@ -880,8 +880,8 @@ export default function StudentExamTakePage() {
         const resultsWithExamInfo = {
           ...data,
           exam: {
-            type: exam?.examType || 'PRACTICE_TEST',
-            allowRetakes: exam?.examType === 'DIAGNOSTIC'
+            type: 'PRACTICE_TEST',
+            allowRetakes: false
           }
         }
         sessionStorage.setItem(`exam-results-${examId}`, JSON.stringify(resultsWithExamInfo))
@@ -1324,7 +1324,7 @@ export default function StudentExamTakePage() {
                         
                         // Create a unique ID for this highlight
                         const highlightId = `highlight-${Date.now()}`
-                        const passageId = currentQuestion.question.passage?.id || ''
+                        const passageId = currentQuestion.question.passage || currentQuestion.question.id
                         
                         // Add highlight to state
                         setHighlights(prev => ({
@@ -1364,7 +1364,7 @@ export default function StudentExamTakePage() {
                         }
                       }}
                   >
-                    <KatexRenderer content={currentQuestion.question.passage.content} />
+                    <KatexRenderer content={currentQuestion.question.passage} />
                   </div>
                 </div>
               ) : (
@@ -1392,14 +1392,14 @@ export default function StudentExamTakePage() {
                         onClick={toggleFlag}
                         className={`p-1.5 rounded transition-colors ${
                           currentQuestion && flaggedQuestions.has(
-                            currentQuestion.question.question ? currentQuestion.question.question.id : currentQuestion.question.id
+                            currentQuestion.question.id
                           )
                             ? 'text-orange-600 hover:text-orange-700'
                             : 'text-gray-400 hover:text-gray-600'
                         }`}
                         aria-label={`${
                           currentQuestion && flaggedQuestions.has(
-                            currentQuestion.question.question ? currentQuestion.question.question.id : currentQuestion.question.id
+                            currentQuestion.question.id
                           ) ? 'Unflag' : 'Flag'
                         } question`}
                         title="Flag for review"
@@ -1436,7 +1436,7 @@ export default function StudentExamTakePage() {
                 </span>
                 {currentQuestion.question.options.map((option, index) => {
                   const optionLetter = String.fromCharCode(65 + index)
-                  const baseQuestionId = currentQuestion.question.question ? currentQuestion.question.question.id : currentQuestion.question.id
+                  const baseQuestionId = currentQuestion.question.id
                   const isSelected = answers[baseQuestionId] === option.id
                   
                   return (
@@ -1513,7 +1513,7 @@ export default function StudentExamTakePage() {
                   className="w-full p-4 border-2 border-gray-200 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                   rows={6}
                   placeholder="Enter your answer here..."
-                  value={answers[currentQuestion.question.question ? currentQuestion.question.question.id : currentQuestion.question.id] || ''}
+                  value={answers[currentQuestion.question.id] || ''}
                   onChange={(e) => handleAnswerSelect(currentQuestion.id, e.target.value)}
                   aria-label="Short answer response"
                 />
@@ -1545,14 +1545,14 @@ export default function StudentExamTakePage() {
                     onClick={toggleFlag}
                     className={`p-2 rounded-lg transition-colors ${
                       currentQuestion && flaggedQuestions.has(
-                        currentQuestion.question.question ? currentQuestion.question.question.id : currentQuestion.question.id
+                        currentQuestion.question.id
                       )
                         ? 'text-orange-600 bg-orange-100 hover:bg-orange-200'
                         : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
                     }`}
                     aria-label={`${
                       currentQuestion && flaggedQuestions.has(
-                        currentQuestion.question.question ? currentQuestion.question.question.id : currentQuestion.question.id
+                        currentQuestion.question.id
                       ) ? 'Unflag' : 'Flag'
                     } question`}
                     title="Flag for review"
@@ -1588,7 +1588,7 @@ export default function StudentExamTakePage() {
                   </span>
                   {currentQuestion.question.options.map((option, index) => {
                     const optionLetter = String.fromCharCode(65 + index)
-                    const baseQuestionId = currentQuestion.question.question ? currentQuestion.question.question.id : currentQuestion.question.id
+                    const baseQuestionId = currentQuestion.question.id
                     const isSelected = answers[baseQuestionId] === option.id
                     
                     return (
@@ -1667,7 +1667,7 @@ export default function StudentExamTakePage() {
                     className="w-full p-4 border-2 border-gray-200 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                     rows={6}
                     placeholder="Enter your answer here..."
-                    value={answers[currentQuestion.question.question ? currentQuestion.question.question.id : currentQuestion.question.id] || ''}
+                    value={answers[currentQuestion.question.id] || ''}
                     onChange={(e) => handleAnswerSelect(currentQuestion.id, e.target.value)}
                     aria-label="Short answer response"
                   />

@@ -1,22 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { authOptions } from '@/lib/auth'
 import { PrismaClient, ModuleType, ModuleDifficulty } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { examId: string } }
+  { params }: { params: Promise<{ examId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
+    const { examId } = await params
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const exam = await prisma.exam.findUnique({
-      where: { id: params.examId },
+      where: { id: examId },
       include: {
         sections: {
           include: {
@@ -50,7 +51,7 @@ export async function GET(
       where: {
         studentId_examId: {
           studentId: session.user.id,
-          examId: params.examId
+          examId: examId
         }
       }
     })
@@ -60,7 +61,7 @@ export async function GET(
       assignment = await prisma.examAssignment.create({
         data: {
           studentId: session.user.id,
-          examId: params.examId,
+          examId: examId,
           status: 'IN_PROGRESS',
           startedAt: new Date()
         }
@@ -69,7 +70,7 @@ export async function GET(
 
     // Determine which module to show based on adaptive logic
     let currentModule = null
-    let availableModules = []
+    let availableModules: any[] = []
 
     for (const section of exam.sections) {
       const routingModule = section.modules.find(m => m.moduleType === ModuleType.ROUTING)

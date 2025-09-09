@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 // PUT /api/admin/questions/[questionId] - Update a question
@@ -20,11 +20,11 @@ export async function PUT(
     const { text, type, points, options } = data
 
     // First, update the question
-    const updatedQuestion = await prisma.question.update({
+    const updatedQuestion = await prisma.questionBankItem.update({
       where: { id: questionId },
       data: {
-        ...(text !== undefined && { text }),
-        ...(type !== undefined && { type }),
+        ...(text !== undefined && { questionText: text }),
+        ...(type !== undefined && { questionType: type }),
         ...(points !== undefined && { points })
       }
     })
@@ -49,7 +49,7 @@ export async function PUT(
     }
 
     // Fetch the updated question with options
-    const question = await prisma.question.findUnique({
+    const question = await prisma.questionBankItem.findUnique({
       where: { id: questionId },
       include: {
         options: true
@@ -77,7 +77,7 @@ export async function DELETE(
 
     const { questionId } = await params
 
-    await prisma.question.delete({
+    await prisma.questionBankItem.delete({
       where: { id: questionId }
     })
 

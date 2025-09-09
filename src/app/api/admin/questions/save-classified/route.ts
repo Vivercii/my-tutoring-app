@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 export async function POST(req: Request) {
@@ -75,7 +75,6 @@ export async function POST(req: Request) {
       data: {
         questionText,
         questionType,
-        correctAnswer,
         explanation: explanation || '',
         program,
         subject,
@@ -106,15 +105,8 @@ export async function POST(req: Request) {
       })
     }
     
-    // Update skill question count for the heatmap
-    await prisma.skill.update({
-      where: { id: skill.id },
-      data: {
-        questionCount: {
-          increment: 1
-        }
-      }
-    })
+    // Note: Skill question counts are calculated dynamically through the questions relation
+    // No need to manually update counts as they're derived from the relationship
     
     return NextResponse.json({
       success: true,

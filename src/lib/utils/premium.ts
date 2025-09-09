@@ -38,7 +38,7 @@ export async function checkUserPremiumStatus(userId: string): Promise<{
   }
 
   // 2. Check if user has active tutoring credits
-  if (user.credits && user.credits.remainingSessions > 0) {
+  if (user.credits && (user.credits.totalPurchased - user.credits.totalUsed) > 0) {
     return {
       isPremium: true,
       reason: 'tutoring_package',

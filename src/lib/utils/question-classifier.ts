@@ -136,7 +136,7 @@ function findClosestSkill(targetName: string, skills: any[]): any | null {
     const targetWords = target.split(/\s+/)
     const skillWords = skillName.split(/\s+/)
     const matchingWords = targetWords.filter(word => 
-      skillWords.some(sw => sw.includes(word) || word.includes(sw))
+      skillWords.some((sw: string) => sw.includes(word) || word.includes(sw))
     )
     const score = matchingWords.length / targetWords.length
     
@@ -340,7 +340,7 @@ Return ONLY a JSON array with ${questions.length} objects, one for each question
         )
         
         if (skill) {
-          classification.meanImportance = skill.meanImportance
+          classification.meanImportance = skill.meanImportance ?? undefined
         }
         
         return classification

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 // POST /api/students/exams/[examId]/answers - Save answer for a question
@@ -8,6 +8,8 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ examId: string }> }
 ) {
+  let questionId: string = '', selectedChoice: string = '', textAnswer: string = '', assignmentId: string | undefined = undefined
+  
   try {
     const session = await getServerSession(authOptions)
     
@@ -18,7 +20,7 @@ export async function POST(
     const resolvedParams = await params
     const examId = resolvedParams.examId
     const body = await request.json()
-    const { questionId, selectedChoice, textAnswer } = body
+    ;({ questionId, selectedChoice, textAnswer } = body)
 
     if (!questionId) {
       return NextResponse.json({ error: 'Question ID required' }, { status: 400 })

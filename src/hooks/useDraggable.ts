@@ -70,8 +70,8 @@ export function useDraggable({
   })
   const [nearestZone, setNearestZone] = useState<Position | null>(null)
   const elementRef = useRef<HTMLDivElement>(null)
-  const dragTimeoutRef = useRef<NodeJS.Timeout>()
-  const longPressTimerRef = useRef<NodeJS.Timeout>()
+  const dragTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const longPressTimerRef = useRef<NodeJS.Timeout | null>(null)
 
   // Save position to localStorage whenever it changes
   useEffect(() => {
@@ -102,7 +102,7 @@ export function useDraggable({
     // Calculate X position
     if (offset.x === '50%') {
       x = viewport.width / 2
-    } else if (offset.x < 0) {
+    } else if (typeof offset.x === 'number' && offset.x < 0) {
       x = viewport.width + offset.x
     } else {
       x = offset.x as number
@@ -111,7 +111,7 @@ export function useDraggable({
     // Calculate Y position
     if (offset.y === '50%') {
       y = viewport.height / 2
-    } else if (offset.y < 0) {
+    } else if (typeof offset.y === 'number' && offset.y < 0) {
       y = viewport.height + offset.y
     } else {
       y = offset.y as number

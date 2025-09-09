@@ -298,7 +298,7 @@ export default function SATDatesWidget() {
         <button
           ref={(el) => {
             pillRef.current = el
-            if (elementRef) elementRef.current = el
+            if (elementRef) elementRef.current = el as any
           }}
           onClick={() => setIsExpanded(true)}
           onContextMenu={handleContextMenu}

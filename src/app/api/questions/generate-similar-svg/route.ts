@@ -58,7 +58,7 @@ export async function POST(req: Request) {
     if (question.questionType === 'MULTIPLE_CHOICE' && question.correctAnswer) {
       // Determine what we're solving for
       const correctOriginal = question.correctAnswer
-      const correctOption = question.options?.find(o => o.letter === correctOriginal)
+      const correctOption = question.options?.find((o: any) => o.letter === correctOriginal)
       
       if (correctOption) {
         // Apply replacements to get new correct answer
@@ -91,7 +91,7 @@ export async function POST(req: Request) {
       questionText: newQuestionText,
       questionType: question.questionType,
       options: newOptions,
-      correctAnswer: newOptions?.find(o => o.isCorrect)?.letter || question.correctAnswer,
+      correctAnswer: newOptions?.find((o: any) => o.isCorrect)?.letter || question.correctAnswer,
       explanation: `This question tests the same concept as the original. The values have been changed to create a new variation.`
     }
     

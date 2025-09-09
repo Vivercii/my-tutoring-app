@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { examId: string; moduleId: string } }
+  { params }: { params: Promise<{ examId: string; moduleId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -14,8 +14,10 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const { examId, moduleId } = await params
+
     const module = await prisma.examModule.findUnique({
-      where: { id: params.moduleId },
+      where: { id: moduleId },
       include: {
         section: {
           include: {
@@ -47,7 +49,7 @@ export async function GET(
     }
 
     // Verify the module belongs to the specified exam
-    if (module.section.exam.id !== params.examId) {
+    if (module.section.exam.id !== examId) {
       return NextResponse.json({ error: 'Module does not belong to this exam' }, { status: 400 })
     }
 

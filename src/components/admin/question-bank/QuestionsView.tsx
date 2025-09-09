@@ -622,7 +622,7 @@ export default function QuestionsView({
                   Question Text
                 </label>
                 <RichTextEditor
-                  value={formData.questionText}
+                  content={formData.questionText}
                   onChange={(value) => setFormData({ ...formData, questionText: value })}
                   placeholder="Enter question text..."
                 />

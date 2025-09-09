@@ -267,7 +267,7 @@ export default function PassagesView({
                   Content
                 </label>
                 <RichTextEditor
-                  value={passageFormData.content}
+                  content={passageFormData.content}
                   onChange={(value) => setPassageFormData({ ...passageFormData, content: value })}
                   placeholder="Enter passage content..."
                 />

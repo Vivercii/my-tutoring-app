@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { Role } from '@prisma/client'
 
@@ -214,7 +214,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       students: linkedStudents.map(link => ({
-        id: link.id,
+        linkId: link.id,
         linkedAt: link.createdAt,
         ...link.student
       }))

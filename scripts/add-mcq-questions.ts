@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, QuestionType } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
@@ -131,7 +131,7 @@ async function main() {
         data: {
           questionCode: q.questionCode,
           questionText: q.questionText,
-          questionType: q.questionType,
+          questionType: q.questionType as QuestionType,
           difficulty: q.difficulty,
           topic: q.topic,
           subject: 'Math',

@@ -42,7 +42,7 @@ export default function TestMasquerade() {
       }
     } catch (error) {
       console.error('Error:', error)
-      setResult({ error: error.message })
+      setResult({ error: error instanceof Error ? error.message : 'An unknown error occurred' })
     } finally {
       setLoading(false)
     }

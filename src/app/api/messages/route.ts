@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 // GET - Fetch messages for current user
@@ -30,11 +30,18 @@ export async function GET(request: Request) {
       if (session.user.role === 'PARENT') {
         // Get parent's students
         const parentStudents = await prisma.parentStudent.findMany({
-          where: { parentEmail: session.user.email },
-          select: { studentEmail: true }
+          where: { 
+            parent: { 
+              email: session.user.email 
+            }
+          },
+          include: {
+            studentProfile: true
+          }
         })
-        const studentEmails = parentStudents.map(ps => ps.studentEmail)
-        whereClause.studentEmail = { in: studentEmails }
+        const studentIds = parentStudents.map(ps => ps.studentProfile.studentId)
+        // This needs to be adapted based on your Message model structure
+        whereClause.studentId = { in: studentIds }
       }
       // Admins see everything, no filter needed
     }
@@ -123,7 +130,11 @@ export async function POST(request: Request) {
 
       // Get assigned instructor
       const tutorStudent = await prisma.tutorStudent.findFirst({
-        where: { studentEmail: sender.email },
+        where: { 
+          student: { 
+            email: sender.email 
+          }
+        },
         include: { tutor: true }
       })
 

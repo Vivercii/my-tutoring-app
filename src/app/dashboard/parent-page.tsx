@@ -279,7 +279,7 @@ export default function ParentDashboard() {
     sessionBalance < 5 && { text: `Low hour balance (${sessionBalance}h remaining)`, type: 'warning' },
     students.length === 0 && { text: 'No students added yet', type: 'info' },
     monthlySessionCount === 0 && { text: 'No sessions scheduled this month', type: 'info' },
-  ].filter(Boolean)
+  ].filter((item): item is { text: string; type: string } => Boolean(item))
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -427,7 +427,7 @@ export default function ParentDashboard() {
                               <div className="text-right">
                                 <p className="text-sm font-medium">{session.tutorName || 'TBD'}</p>
                                 <p className="text-xs text-gray-600">
-                                  {Math.round((new Date(session.endTime) - new Date(session.startTime)) / (1000 * 60 * 60))} hours
+                                  {Math.round((new Date(session.endTime).getTime() - new Date(session.startTime).getTime()) / (1000 * 60 * 60))} hours
                                 </p>
                               </div>
                             </div>
@@ -572,15 +572,7 @@ export default function ParentDashboard() {
 
           {activeTab === 'hours' && (
             <div className="space-y-6">
-              <HourBalanceCard 
-                balance={sessionBalance}
-                totalPurchased={creditStats.totalPurchased}
-                totalUsed={creditStats.totalUsed}
-                onRefresh={() => {
-                  fetchSessionBalance()
-                  fetchTransactionHistory()
-                }}
-              />
+              <HourBalanceCard />
               {/* Transaction history and other hour-related content */}
             </div>
           )}

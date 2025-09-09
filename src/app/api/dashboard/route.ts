@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '../auth/[...nextauth]/route'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(request: NextRequest) {
@@ -16,7 +16,8 @@ export async function GET(request: NextRequest) {
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
       include: {
-        students: true
+        managedStudents: true,
+        taughtStudents: true
       }
     })
 
@@ -34,12 +35,12 @@ export async function GET(request: NextRequest) {
     // Get session logs for all students
     const sessionLogs = await prisma.sessionLog.findMany({
       where: {
-        student: {
-          userId: user.id
+        studentProfile: {
+          studentId: user.id
         }
       },
       include: {
-        student: true
+        studentProfile: true
       },
       orderBy: {
         date: 'desc'
@@ -101,7 +102,7 @@ export async function GET(request: NextRequest) {
       },
       upcomingSessions,
       recentActivities,
-      students: user.students
+      students: user.managedStudents || user.taughtStudents || []
     }
 
     return NextResponse.json(dashboardData)

@@ -141,7 +141,7 @@ IMPORTANT:
       console.error('JSON Parse error:', parseError)
       console.error('Attempted to parse:', jsonMatch[0].substring(0, 500))
       console.error('Full response was:', text)
-      throw new Error(`Failed to parse AI response: ${parseError.message}`)
+      throw new Error(`Failed to parse AI response: ${parseError instanceof Error ? parseError.message : 'Unknown parse error'}`)
     }
     
     return NextResponse.json({ 

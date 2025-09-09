@@ -495,7 +495,7 @@ export function UserManagement({ statsRefetch }: UserManagementProps) {
                   </td>
                 </tr>
               ) : (
-                users.map((user) => (
+                users.map((user: any) => (
                   <UserTableRow
                     key={user.id}
                     user={user}
@@ -953,7 +953,7 @@ export function UserManagement({ statsRefetch }: UserManagementProps) {
                       className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-red-500"
                     >
                       <option value="">Select a tutor...</option>
-                      {tutors.map((tutor) => (
+                      {tutors.map((tutor: any) => (
                         <option key={tutor.id} value={tutor.id}>
                           {tutor.name} ({tutor.email}) - {tutor.studentCount} students
                         </option>

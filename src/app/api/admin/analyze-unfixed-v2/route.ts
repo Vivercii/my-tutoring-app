@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(request: NextRequest) {
@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
         q.questionText.includes('x =') ||
         q.questionText.includes('y =')
       ),
-      bySection: {}
+      bySection: {} as Record<string, typeof unfixedQuestions>
     }
 
     // Group by section

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 // GET: Fetch scheduled sessions
@@ -297,7 +297,7 @@ export async function POST(request: NextRequest) {
       await tx.activity.create({
         data: {
           type: 'session_booked',
-          description: `Parent ${session.user.email} booked a ${durationHours}h session for student ${studentProfile.student.name || studentProfile.student.email} with tutor ${tutor.name || tutor.email}`,
+          description: `Parent ${session.user.email} booked a ${durationHours}h session for student ${studentId} with tutor ${tutor.name || tutor.email}`,
           userId: user.id
         }
       })

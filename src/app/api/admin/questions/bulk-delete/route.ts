@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 export async function POST(req: Request) {
@@ -52,7 +52,7 @@ export async function POST(req: Request) {
       
       await prisma.answerOption.deleteMany({
         where: {
-          questionBankItemId: { in: questionIdsToDelete }
+          questionId: { in: questionIdsToDelete }
         }
       })
       
@@ -63,17 +63,8 @@ export async function POST(req: Request) {
       
       deletedCount = result.count
       
-      // Update skill question counts
-      if (filters.skillId) {
-        await prisma.skill.update({
-          where: { id: filters.skillId },
-          data: {
-            questionCount: {
-              decrement: deletedCount
-            }
-          }
-        })
-      }
+      // Note: Question counts are calculated dynamically through the questions relation
+      // No need to manually update counts as they're derived from the relationship
       
     } else if (questionIds && Array.isArray(questionIds)) {
       // Delete specific questions
@@ -95,7 +86,7 @@ export async function POST(req: Request) {
       // Delete answer options first
       await prisma.answerOption.deleteMany({
         where: {
-          questionBankItemId: { in: questionIds }
+          questionId: { in: questionIds }
         }
       })
       
@@ -108,17 +99,8 @@ export async function POST(req: Request) {
       
       deletedCount = result.count
       
-      // Update skill question counts
-      for (const [skillId, count] of skillCounts) {
-        await prisma.skill.update({
-          where: { id: skillId },
-          data: {
-            questionCount: {
-              decrement: count
-            }
-          }
-        })
-      }
+      // Note: Skill question counts are calculated dynamically through the questions relation
+      // No need to manually update counts as they're derived from the relationship
     }
     
     return NextResponse.json({

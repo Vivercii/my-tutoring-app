@@ -30,7 +30,9 @@ import {
   Eye,
   Play,
   Pause,
-  RotateCw
+  RotateCw,
+  Calendar,
+  User
 } from 'lucide-react'
 
 interface Resource {

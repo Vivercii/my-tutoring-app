@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { classifyQuestionsBatch } from '@/lib/utils/question-classifier'
 
@@ -129,8 +129,7 @@ export async function POST(req: Request) {
                   name: classification.skillName,
                   domainId: domain.id,
                   meanImportance: classification.meanImportance || 2.5,
-                  description: `${classification.skillName} skill`,
-                  questionCount: 0
+                  description: `${classification.skillName} skill`
                 }
               })
             }

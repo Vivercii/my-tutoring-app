@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 // POST /api/students/exams/[examId]/submit - Submit completed exam
@@ -35,7 +35,11 @@ export async function POST(
                   include: {
                     questions: {
                       include: {
-                        question: true
+                        question: {
+                          include: {
+                            options: true
+                          }
+                        }
                       }
                     }
                   }
@@ -74,10 +78,17 @@ export async function POST(
           )
           
           if (studentAnswer) {
-            // Only score multiple choice questions with correct answers
-            if (examQuestion.question.correctAnswer && studentAnswer.submittedAnswer) {
+            // Only score multiple choice questions with options
+            if (examQuestion.question.options && examQuestion.question.options.length > 0 && studentAnswer.submittedAnswer) {
               scoredQuestions++
-              if (studentAnswer.submittedAnswer === examQuestion.question.correctAnswer) {
+              
+              // Find the correct answer from options
+              const correctOption = examQuestion.question.options.find(option => option.isCorrect)
+              // Student answer could be the option letter (A, B, C, D) or option text
+              // For now, let's check if the submitted answer matches the correct option's text
+              const isCorrect = correctOption && studentAnswer.submittedAnswer === correctOption.text
+              
+              if (isCorrect) {
                 correctAnswers++
                 await prisma.studentAnswer.update({
                   where: { id: studentAnswer.id },

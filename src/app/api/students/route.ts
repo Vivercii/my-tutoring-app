@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '../auth/[...nextauth]/route'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 // GET /api/students - Get all students for the current user
@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
       include: {
-        students: {
+        managedStudents: {
           orderBy: { createdAt: 'desc' }
         }
       }
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    return NextResponse.json({ students: user.students })
+    return NextResponse.json({ students: user.managedStudents })
   } catch (error) {
     console.error('Error fetching students:', error)
     return NextResponse.json(
@@ -69,11 +69,28 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    const student = await prisma.student.create({
+    // Create student as a User with role STUDENT
+    const studentUser = await prisma.user.create({
       data: {
         name: name.trim(),
-        program: program,
-        userId: user.id
+        email: `student_${Date.now()}@temp.local`, // Temporary email, will be updated when they register
+        role: 'STUDENT'
+      }
+    })
+
+    // Create StudentProfile
+    const studentProfile = await prisma.studentProfile.create({
+      data: {
+        studentId: studentUser.id,
+        program: program
+      }
+    })
+
+    // Create ParentStudent relationship
+    await prisma.parentStudent.create({
+      data: {
+        parentId: user.id,
+        studentProfileId: studentProfile.id
       }
     })
 
@@ -81,12 +98,12 @@ export async function POST(request: NextRequest) {
     await prisma.activity.create({
       data: {
         type: 'student_added',
-        description: `Added ${student.name} as a student`,
+        description: `Added ${studentUser.name} as a student`,
         userId: user.id
       }
     })
 
-    return NextResponse.json({ student }, { status: 201 })
+    return NextResponse.json({ student: { id: studentUser.id, name: studentUser.name, program: studentProfile.program } }, { status: 201 })
   } catch (error) {
     console.error('Error creating student:', error)
     return NextResponse.json(

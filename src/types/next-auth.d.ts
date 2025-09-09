@@ -13,8 +13,8 @@ declare module "next-auth" {
       isAdmin: boolean;
       isActive: boolean;
       isPremium: boolean;
-      premiumSince?: Date | null;
-      premiumValidUntil?: Date | null;
+      premiumSince?: string | null;
+      premiumValidUntil?: string | null;
       masquerading?: {
         originalUserId: string;
         originalUserEmail: string;
@@ -33,8 +33,8 @@ declare module "next-auth/jwt" {
     isAdmin: boolean;
     isActive: boolean;
     isPremium: boolean;
-    premiumSince?: Date | null;
-    premiumValidUntil?: Date | null;
+    premiumSince?: string | null;
+    premiumValidUntil?: string | null;
     masquerading?: {
       originalUserId: string;
       originalUserEmail: string;

@@ -258,7 +258,7 @@ export default function TutorBookingCalendar({ students, studentId, onClose }: T
                         <div className="flex-1">
                           <p className="font-medium">{tutor.name}</p>
                           <p className="text-sm text-gray-600">
-                            {tutor.subject || (tutor.tutorProfile?.subjects && tutor.tutorProfile.subjects.join(', '))}
+                            {tutor.tutorProfile?.subjects && tutor.tutorProfile.subjects.join(', ')}
                           </p>
                         </div>
                       </div>
