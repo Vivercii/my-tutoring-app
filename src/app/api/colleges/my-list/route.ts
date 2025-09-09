@@ -34,66 +34,32 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Student profile not found' }, { status: 404 })
     }
 
-    // Format the response
-    const formattedList = {
-      dream: studentProfile.colleges
-        .filter(sc => sc.listType === 'DREAM')
-        .map(sc => ({
-          id: sc.college.id,
-          name: sc.college.name,
-          city: sc.college.city,
-          state: sc.college.state,
-          admissionRate: sc.college.admissionRate ? (sc.college.admissionRate * 100).toFixed(1) + '%' : null,
-          satRange: sc.college.satTotalLow && sc.college.satTotalHigh 
-            ? `${sc.college.satTotalLow}-${sc.college.satTotalHigh}` 
-            : null,
-          actRange: sc.college.actCompositeLow && sc.college.actCompositeHigh 
-            ? `${sc.college.actCompositeLow}-${sc.college.actCompositeHigh}` 
-            : null,
-          status: sc.status,
-          notes: sc.notes,
-          applicationDeadline: sc.applicationDeadline,
-          addedAt: sc.addedAt
-        })),
-      target: studentProfile.colleges
-        .filter(sc => sc.listType === 'TARGET')
-        .map(sc => ({
-          id: sc.college.id,
-          name: sc.college.name,
-          city: sc.college.city,
-          state: sc.college.state,
-          admissionRate: sc.college.admissionRate ? (sc.college.admissionRate * 100).toFixed(1) + '%' : null,
-          satRange: sc.college.satTotalLow && sc.college.satTotalHigh 
-            ? `${sc.college.satTotalLow}-${sc.college.satTotalHigh}` 
-            : null,
-          actRange: sc.college.actCompositeLow && sc.college.actCompositeHigh 
-            ? `${sc.college.actCompositeLow}-${sc.college.actCompositeHigh}` 
-            : null,
-          status: sc.status,
-          notes: sc.notes,
-          applicationDeadline: sc.applicationDeadline,
-          addedAt: sc.addedAt
-        })),
-      safety: studentProfile.colleges
-        .filter(sc => sc.listType === 'SAFETY')
-        .map(sc => ({
-          id: sc.college.id,
-          name: sc.college.name,
-          city: sc.college.city,
-          state: sc.college.state,
-          admissionRate: sc.college.admissionRate ? (sc.college.admissionRate * 100).toFixed(1) + '%' : null,
-          satRange: sc.college.satTotalLow && sc.college.satTotalHigh 
-            ? `${sc.college.satTotalLow}-${sc.college.satTotalHigh}` 
-            : null,
-          actRange: sc.college.actCompositeLow && sc.college.actCompositeHigh 
-            ? `${sc.college.actCompositeLow}-${sc.college.actCompositeHigh}` 
-            : null,
-          status: sc.status,
-          notes: sc.notes,
-          applicationDeadline: sc.applicationDeadline,
-          addedAt: sc.addedAt
-        }))
-    }
+    // Return the colleges as an array with all necessary data
+    const formattedList = studentProfile.colleges.map(sc => ({
+      id: sc.id,
+      listType: sc.listType,
+      status: sc.status,
+      notes: sc.notes,
+      applicationDeadline: sc.applicationDeadline,
+      addedAt: sc.addedAt,
+      college: {
+        id: sc.college.id,
+        name: sc.college.name,
+        city: sc.college.city,
+        state: sc.college.state,
+        admissionRate: sc.college.admissionRate,
+        satTotalLow: sc.college.satTotalLow,
+        satTotalHigh: sc.college.satTotalHigh,
+        actCompositeLow: sc.college.actCompositeLow,
+        actCompositeHigh: sc.college.actCompositeHigh,
+        inStateTuition: sc.college.inStateTuition,
+        outStateTuition: sc.college.outStateTuition,
+        ranking: sc.college.ranking,
+        type: sc.college.type,
+        size: sc.college.size,
+        setting: sc.college.setting
+      }
+    }))
 
     return NextResponse.json(formattedList)
   } catch (error) {

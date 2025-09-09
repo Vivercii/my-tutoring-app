@@ -59,10 +59,18 @@ export default function CollegeList({ studentId }: { studentId: string }) {
       const response = await fetch('/api/colleges/my-list')
       if (response.ok) {
         const data = await response.json()
-        setColleges(data)
+        // Ensure data is an array
+        setColleges(Array.isArray(data) ? data : [])
+      } else if (response.status === 404) {
+        // Student profile not found - that's ok, just show empty list
+        setColleges([])
+      } else {
+        console.error('Error response:', response.status)
+        setColleges([])
       }
     } catch (error) {
       console.error('Error fetching colleges:', error)
+      setColleges([])
     } finally {
       setLoading(false)
     }
