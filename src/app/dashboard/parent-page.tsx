@@ -276,9 +276,9 @@ export default function ParentDashboard() {
 
   // Attention needed items
   const attentionItems = [
-    sessionBalance < 5 && { text: `Low hour balance (${sessionBalance}h remaining)`, type: 'warning' },
-    students.length === 0 && { text: 'No students added yet', type: 'info' },
-    monthlySessionCount === 0 && { text: 'No sessions scheduled this month', type: 'info' },
+    sessionBalance < 5 && { text: `Low hour balance (${sessionBalance || 0}h remaining)`, type: 'warning' },
+    (!students || students.length === 0) && { text: 'No students added yet', type: 'info' },
+    (!monthlySessionCount || monthlySessionCount === 0) && { text: 'No sessions scheduled this month', type: 'info' },
   ].filter((item): item is { text: string; type: string } => Boolean(item))
 
   return (
@@ -363,7 +363,7 @@ export default function ParentDashboard() {
           {activeTab === 'overview' && (
             <div className="space-y-6">
               {/* Attention Needed Banner */}
-              {attentionItems.length > 0 && (
+              {attentionItems && attentionItems.length > 0 && (
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                   <h3 className="font-semibold text-yellow-900 mb-2">⚠️ Attention Needed</h3>
                   <ul className="space-y-1">
@@ -382,7 +382,7 @@ export default function ParentDashboard() {
                     <Activity className="h-5 w-5 text-gray-800" />
                     Recent Activity
                   </h3>
-                  {recentActivity.length > 0 ? (
+                  {recentActivity && recentActivity.length > 0 ? (
                     <div className="space-y-3">
                       {recentActivity.map((activity, index) => (
                         <div key={activity.id || index} className="flex items-start space-x-3 py-2 border-b last:border-0">
@@ -412,7 +412,7 @@ export default function ParentDashboard() {
                     <Calendar className="h-5 w-5 text-gray-800" />
                     Upcoming Sessions
                   </h3>
-                  {upcomingSessions.length > 0 ? (
+                  {upcomingSessions && upcomingSessions.length > 0 ? (
                     <>
                       <div className="space-y-3">
                         {upcomingSessions.map((session, index) => (
@@ -475,7 +475,7 @@ export default function ParentDashboard() {
                     <TrendingUp className="h-5 w-5 text-gray-800" />
                     Performance Trends
                   </h3>
-                  {students.length > 0 ? (
+                  {students && students.length > 0 ? (
                     <div className="space-y-4">
                       {students.map((student) => (
                         <div key={student.id}>
@@ -508,7 +508,7 @@ export default function ParentDashboard() {
                     <Award className="h-5 w-5 text-gray-800" />
                     Key Insights
                   </h3>
-                  {students.length > 0 ? (
+                  {students && students.length > 0 ? (
                     <div className="space-y-3">
                       <div className="p-3 bg-gray-50 rounded-lg">
                         <p className="text-sm font-medium text-gray-700">Getting Started</p>
