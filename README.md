@@ -15,3 +15,4 @@ A tutoring management application built with Next.js, NextAuth.js, and Prisma.
 - Tailwind CSS
 - TypeScript
 
+# Deployment trigger Tue Sep  9 13:13:54 EDT 2025
