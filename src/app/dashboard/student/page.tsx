@@ -7,7 +7,7 @@ import StudentOnboarding from '@/components/students/StudentOnboarding'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
-import { Calendar, Target, Clock, TrendingUp, BookOpen, Award } from 'lucide-react'
+import { Calendar, Target, Clock, TrendingUp, BookOpen, Award, GraduationCap } from 'lucide-react'
 import { format } from 'date-fns'
 
 export default function StudentDashboard() {
@@ -94,6 +94,13 @@ export default function StudentDashboard() {
                 </p>
               </div>
               <div className="flex gap-3">
+                <button
+                  onClick={() => router.push('/dashboard/student/colleges')}
+                  className="px-4 py-2 bg-white text-gray-900 hover:bg-gray-100 rounded-lg font-light transition-colors flex items-center gap-2"
+                >
+                  <GraduationCap className="h-4 w-4" />
+                  My Colleges
+                </button>
                 <button
                   onClick={() => router.push('/dashboard/exams')}
                   className="px-4 py-2 bg-white text-gray-900 hover:bg-gray-100 rounded-lg font-light transition-colors flex items-center gap-2"
