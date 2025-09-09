@@ -3,12 +3,6 @@ import Stripe from 'stripe'
 import { prisma } from '@/lib/prisma'
 import { handlePremiumPurchase } from './premium-handler'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-08-27.basil',
-})
-
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
-
 // Define the hours for each price (tutoring packages)
 const PRICE_TO_HOURS: Record<string, number> = {
   'price_1S2M7NLDoRMBiHI8IBMbQEpB': 5, // Gold Package - 5 hours
@@ -38,6 +32,21 @@ export async function POST(req: NextRequest) {
   console.log('📍 Webhook endpoint hit at:', new Date().toISOString())
   
   try {
+    // Initialize Stripe and webhook secret inside the function
+    if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_WEBHOOK_SECRET) {
+      console.error('Stripe configuration missing')
+      return NextResponse.json(
+        { error: 'Webhook configuration error' },
+        { status: 500 }
+      )
+    }
+
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2025-08-27.basil',
+    })
+
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
+
     const body = await req.text()
     const signature = req.headers.get('stripe-signature')!
     
