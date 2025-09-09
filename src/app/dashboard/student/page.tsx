@@ -78,32 +78,45 @@ export default function StudentDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                Welcome back, {session?.user?.name || 'Student'}!
-              </h1>
-              <p className="text-gray-600 mt-1">
-                {daysUntilExam && daysUntilExam > 0 
-                  ? `${daysUntilExam} days until your ${profile.program} exam`
-                  : 'Keep up the great work!'}
-              </p>
+      {/* Header - Black to match app design */}
+      <div className="bg-black text-white">
+        <div className="px-6 py-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-4xl font-light">
+                  Welcome back, {session?.user?.name || 'Student'}!
+                </h1>
+                <p className="text-gray-300 mt-2">
+                  {daysUntilExam && daysUntilExam > 0 
+                    ? `${daysUntilExam} days until your ${profile.program} exam - let's make them count!`
+                    : 'Track your progress and achieve your goals'}
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => router.push('/dashboard/exams')}
+                  className="px-4 py-2 bg-white text-gray-900 hover:bg-gray-100 rounded-lg font-light transition-colors flex items-center gap-2"
+                >
+                  <BookOpen className="h-4 w-4" />
+                  Practice Tests
+                </button>
+                <button
+                  onClick={() => router.push('/dashboard/schedule')}
+                  className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg font-light transition-colors border border-gray-700"
+                >
+                  Book Session
+                </button>
+              </div>
             </div>
-            <Button onClick={() => router.push('/dashboard/exams')}>
-              <BookOpen className="h-4 w-4 mr-2" />
-              Practice Tests
-            </Button>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <Card>
+          <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -117,7 +130,7 @@ export default function StudentDashboard() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -131,7 +144,7 @@ export default function StudentDashboard() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -145,7 +158,7 @@ export default function StudentDashboard() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -161,7 +174,7 @@ export default function StudentDashboard() {
         {/* Goals and Progress */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Objectives */}
-          <Card>
+          <Card className="border-0 shadow-lg">
             <CardHeader>
               <CardTitle>Your Objectives</CardTitle>
               <CardDescription>What you're working towards</CardDescription>
@@ -190,20 +203,19 @@ export default function StudentDashboard() {
               ) : (
                 <div className="text-center py-8">
                   <p className="text-gray-500">No objectives set yet</p>
-                  <Button 
-                    variant="outline" 
-                    className="mt-4"
+                  <button 
+                    className="mt-4 px-4 py-2 bg-black hover:bg-gray-900 text-white rounded-lg font-light transition-colors"
                     onClick={() => setShowOnboarding(true)}
                   >
                     Set Your Goals
-                  </Button>
+                  </button>
                 </div>
               )}
             </CardContent>
           </Card>
 
           {/* Key Results */}
-          <Card>
+          <Card className="border-0 shadow-lg">
             <CardHeader>
               <CardTitle>Key Results</CardTitle>
               <CardDescription>How you'll measure success</CardDescription>
@@ -244,7 +256,7 @@ export default function StudentDashboard() {
         </div>
 
         {/* Study Plan */}
-        <Card className="mt-6">
+        <Card className="mt-6 border-0 shadow-lg">
           <CardHeader>
             <CardTitle>Today's Focus</CardTitle>
             <CardDescription>Based on your goals and upcoming exam</CardDescription>
@@ -257,24 +269,29 @@ export default function StudentDashboard() {
                   <p className="text-sm text-blue-800">{profile.weaknesses}</p>
                 </div>
                 <div className="flex gap-4">
-                  <Button onClick={() => router.push('/dashboard/exams')}>
+                  <button 
+                    onClick={() => router.push('/dashboard/exams')}
+                    className="px-4 py-2 bg-black hover:bg-gray-900 text-white rounded-lg font-light transition-colors"
+                  >
                     Start Practice Test
-                  </Button>
-                  <Button variant="outline" onClick={() => router.push('/dashboard/schedule')}>
+                  </button>
+                  <button 
+                    onClick={() => router.push('/dashboard/schedule')}
+                    className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-light transition-colors"
+                  >
                     Schedule Session
-                  </Button>
+                  </button>
                 </div>
               </div>
             ) : (
               <div className="text-center py-8">
                 <p className="text-gray-500">Complete your profile to get personalized recommendations</p>
-                <Button 
-                  variant="outline" 
-                  className="mt-4"
+                <button 
+                  className="mt-4 px-4 py-2 bg-black hover:bg-gray-900 text-white rounded-lg font-light transition-colors"
                   onClick={() => setShowOnboarding(true)}
                 >
                   Complete Profile
-                </Button>
+                </button>
               </div>
             )}
           </CardContent>

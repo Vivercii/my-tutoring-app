@@ -109,17 +109,25 @@ export default function StudentOnboarding({ studentId, onComplete }: StudentOnbo
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-3xl mx-auto px-4">
+    <div className="min-h-screen bg-gray-50">
+      {/* Black header to match app design */}
+      <div className="bg-black text-white px-6 py-8">
+        <div className="max-w-3xl mx-auto">
+          <h1 className="text-4xl font-light">Welcome to UpstartPrep!</h1>
+          <p className="text-gray-300 mt-2">Let's set up your personalized learning journey</p>
+        </div>
+      </div>
+      
+      <div className="max-w-3xl mx-auto px-6 py-8">
         {/* Progress Bar */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-gray-600">Step {currentStep} of 4</span>
-            <span className="text-sm text-gray-600">{Math.round((currentStep / 4) * 100)}% Complete</span>
+        <div className="mb-8 bg-white rounded-lg p-4 shadow-sm">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm font-medium text-gray-700">Step {currentStep} of 4</span>
+            <span className="text-sm font-medium text-gray-700">{Math.round((currentStep / 4) * 100)}% Complete</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-gray-200 rounded-full h-3">
             <div 
-              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+              className="bg-black h-3 rounded-full transition-all duration-300"
               style={{ width: `${(currentStep / 4) * 100}%` }}
             />
           </div>
@@ -127,10 +135,10 @@ export default function StudentOnboarding({ studentId, onComplete }: StudentOnbo
 
         {/* Step 1: Exam Information */}
         {currentStep === 1 && (
-          <Card>
+          <Card className="shadow-lg border-0">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-2 text-2xl font-light">
+                <Calendar className="h-6 w-6 text-gray-700" />
                 Let's Plan Your Exam Journey
               </CardTitle>
               <CardDescription>
@@ -197,10 +205,10 @@ export default function StudentOnboarding({ studentId, onComplete }: StudentOnbo
 
         {/* Step 2: Objectives */}
         {currentStep === 2 && (
-          <Card>
+          <Card className="shadow-lg border-0">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Target className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-2 text-2xl font-light">
+                <Target className="h-6 w-6 text-gray-700" />
                 Set Your Objectives (The "What")
               </CardTitle>
               <CardDescription>
@@ -241,10 +249,10 @@ export default function StudentOnboarding({ studentId, onComplete }: StudentOnbo
 
         {/* Step 3: Key Results */}
         {currentStep === 3 && (
-          <Card>
+          <Card className="shadow-lg border-0">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Trophy className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-2 text-2xl font-light">
+                <Trophy className="h-6 w-6 text-gray-700" />
                 Define Key Results (The "How")
               </CardTitle>
               <CardDescription>
@@ -291,10 +299,10 @@ export default function StudentOnboarding({ studentId, onComplete }: StudentOnbo
 
         {/* Step 4: Academic Profile */}
         {currentStep === 4 && (
-          <Card>
+          <Card className="shadow-lg border-0">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Check className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-2 text-2xl font-light">
+                <Check className="h-6 w-6 text-gray-700" />
                 Complete Your Profile
               </CardTitle>
               <CardDescription>
@@ -359,28 +367,32 @@ export default function StudentOnboarding({ studentId, onComplete }: StudentOnbo
         )}
 
         {/* Navigation Buttons */}
-        <div className="flex justify-between mt-6">
-          <Button
-            variant="outline"
+        <div className="flex justify-between mt-8">
+          <button
+            className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             onClick={handleBack}
             disabled={currentStep === 1}
           >
-            <ChevronLeft className="h-4 w-4 mr-1" />
+            <ChevronLeft className="h-4 w-4" />
             Back
-          </Button>
+          </button>
 
           {currentStep < 4 ? (
-            <Button onClick={handleNext}>
+            <button 
+              onClick={handleNext}
+              className="px-6 py-3 bg-black hover:bg-gray-900 text-white rounded-lg font-light transition-colors flex items-center gap-2"
+            >
               Next
-              <ChevronRight className="h-4 w-4 ml-1" />
-            </Button>
+              <ChevronRight className="h-4 w-4" />
+            </button>
           ) : (
-            <Button 
+            <button 
               onClick={handleSubmit}
               disabled={isSubmitting}
+              className="px-6 py-3 bg-black hover:bg-gray-900 text-white rounded-lg font-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? 'Saving...' : 'Complete Setup'}
-            </Button>
+            </button>
           )}
         </div>
       </div>
