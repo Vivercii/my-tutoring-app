@@ -8,10 +8,6 @@ const prisma = new PrismaClient()
 export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
 
     const searchParams = req.nextUrl.searchParams
     const query = searchParams.get('q')?.toLowerCase()
@@ -129,17 +125,22 @@ export async function GET(req: NextRequest) {
 
     // Get student's college list if they have one
     let studentColleges: string[] = []
-    if (session.user.role === 'STUDENT') {
-      const studentProfile = await prisma.studentProfile.findUnique({
-        where: { studentId: session.user.id },
-        include: {
-          colleges: {
-            select: { collegeId: true }
+    if (session?.user?.id) {
+      try {
+        const studentProfile = await prisma.studentProfile.findUnique({
+          where: { studentId: session.user.id },
+          include: {
+            colleges: {
+              select: { collegeId: true }
+            }
           }
+        })
+        if (studentProfile) {
+          studentColleges = studentProfile.colleges.map(c => c.collegeId)
         }
-      })
-      if (studentProfile) {
-        studentColleges = studentProfile.colleges.map(c => c.collegeId)
+      } catch (error) {
+        // If student profile doesn't exist, that's ok
+        console.log('Student profile not found, continuing without it')
       }
     }
 

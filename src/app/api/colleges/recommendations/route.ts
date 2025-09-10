@@ -9,17 +9,23 @@ export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session?.user || session.user.role !== 'STUDENT') {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get student profile with current scores
-    const studentProfile = await prisma.studentProfile.findUnique({
+    // Get or create student profile with current scores
+    let studentProfile = await prisma.studentProfile.findUnique({
       where: { studentId: session.user.id }
     })
 
     if (!studentProfile) {
-      return NextResponse.json({ error: 'Student profile not found' }, { status: 404 })
+      // Create a basic profile
+      studentProfile = await prisma.studentProfile.create({
+        data: {
+          studentId: session.user.id,
+          program: 'ACADEMIC_SUPPORT'
+        }
+      })
     }
 
     // Parse student's scores
