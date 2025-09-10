@@ -1103,22 +1103,6 @@ export default function CollegeExplorer({ studentId }: { studentId: string }) {
                       </span>
                     </div>
                   )}
-                  {selectedCollege.satMathLow && selectedCollege.satMathHigh && (
-                    <div>
-                      <span className="text-gray-500">SAT Math:</span>
-                      <span className="ml-2 font-medium">
-                        {selectedCollege.satMathLow}-{selectedCollege.satMathHigh}
-                      </span>
-                    </div>
-                  )}
-                  {selectedCollege.satReadingLow && selectedCollege.satReadingHigh && (
-                    <div>
-                      <span className="text-gray-500">SAT Reading:</span>
-                      <span className="ml-2 font-medium">
-                        {selectedCollege.satReadingLow}-{selectedCollege.satReadingHigh}
-                      </span>
-                    </div>
-                  )}
                   {selectedCollege.actCompositeLow && selectedCollege.actCompositeHigh && (
                     <div>
                       <span className="text-gray-500">ACT Composite:</span>
@@ -1144,12 +1128,6 @@ export default function CollegeExplorer({ studentId }: { studentId: string }) {
                     <div>
                       <span className="text-gray-500">Out-of-State Tuition:</span>
                       <span className="ml-2 font-medium">{formatTuition(selectedCollege.outOfStateTuition)}</span>
-                    </div>
-                  )}
-                  {selectedCollege.roomAndBoard && (
-                    <div>
-                      <span className="text-gray-500">Room & Board:</span>
-                      <span className="ml-2 font-medium">{formatTuition(selectedCollege.roomAndBoard)}</span>
                     </div>
                   )}
                 </div>
