@@ -84,7 +84,7 @@ interface StudentProfile {
 }
 
 const US_STATES = [
-  { code: '', name: 'All States' },
+  { code: 'all', name: 'All States' },
   { code: 'AL', name: 'Alabama' },
   { code: 'AK', name: 'Alaska' },
   { code: 'AZ', name: 'Arizona' },
@@ -138,7 +138,7 @@ const US_STATES = [
 ]
 
 const REGIONS = [
-  { value: '', label: 'All Regions' },
+  { value: 'all', label: 'All Regions' },
   { value: 'northeast', label: 'Northeast', states: ['CT', 'ME', 'MA', 'NH', 'RI', 'VT', 'NJ', 'NY', 'PA'] },
   { value: 'southeast', label: 'Southeast', states: ['AL', 'AR', 'FL', 'GA', 'KY', 'LA', 'MS', 'NC', 'SC', 'TN', 'VA', 'WV'] },
   { value: 'midwest', label: 'Midwest', states: ['IL', 'IN', 'IA', 'KS', 'MI', 'MN', 'MO', 'NE', 'ND', 'OH', 'SD', 'WI'] },
@@ -171,8 +171,8 @@ export default function CollegeExplorer({ studentId }: { studentId: string }) {
   // Filters
   const [filters, setFilters] = useState({
     // Location
-    state: '',
-    region: '',
+    state: 'all',
+    region: 'all',
     
     // Admission
     acceptanceRates: [] as string[],
@@ -254,10 +254,10 @@ export default function CollegeExplorer({ studentId }: { studentId: string }) {
     const params = new URLSearchParams()
     
     if (searchQuery) params.append('q', searchQuery)
-    if (filters.state) params.append('state', filters.state)
+    if (filters.state && filters.state !== 'all') params.append('state', filters.state)
     
     // Add region states if region selected
-    if (filters.region) {
+    if (filters.region && filters.region !== 'all') {
       const region = REGIONS.find(r => r.value === filters.region)
       if (region && region.states) {
         region.states.forEach(state => params.append('state', state))
@@ -397,8 +397,8 @@ export default function CollegeExplorer({ studentId }: { studentId: string }) {
                 size="sm"
                 onClick={() => {
                   setFilters({
-                    state: '',
-                    region: '',
+                    state: 'all',
+                    region: 'all',
                     acceptanceRates: [],
                     testOptional: false,
                     satRange: [400, 1600],
