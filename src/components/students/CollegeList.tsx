@@ -84,7 +84,8 @@ export default function CollegeList({ studentId }: { studentId: string }) {
       const response = await fetch(`/api/colleges/search?q=${encodeURIComponent(searchQuery)}`)
       if (response.ok) {
         const data = await response.json()
-        setSearchResults(data)
+        // Extract colleges array from response
+        setSearchResults(data.colleges || [])
       }
     } catch (error) {
       console.error('Error searching colleges:', error)
