@@ -55,9 +55,27 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 /**
- * IMPORTANT: This interface must match the Prisma College model exactly!
- * Before adding any fields here, ensure they exist in prisma/schema.prisma
- * Always run 'npm run build' locally before pushing to verify TypeScript compatibility
+ * DEPLOYMENT CHECKLIST - MUST READ BEFORE PUSHING TO VERCEL:
+ * 
+ * 1. BEFORE making changes to this interface:
+ *    - Check prisma/schema.prisma for exact field names
+ *    - Field names MUST match exactly (e.g., 'outStateTuition' NOT 'outOfStateTuition')
+ * 
+ * 2. AFTER making changes, ALWAYS:
+ *    - Run: npm run build
+ *    - Fix ALL TypeScript errors before committing
+ *    - If adding new fields, update schema first: npx prisma db push
+ * 
+ * 3. TO DEPLOY TO VERCEL:
+ *    - git add -A
+ *    - git commit -m "your message"
+ *    - git push origin main
+ *    - Vercel auto-deploys from GitHub (no manual deploy needed)
+ * 
+ * 4. COMMON MISTAKES TO AVOID:
+ *    - Wrong field names (undergradEnrollment vs undergraduateEnrollment)
+ *    - Using fields that don't exist in Prisma schema
+ *    - Not testing build locally before pushing
  * 
  * Fields currently in database:
  * - Basic: id, name, state, city, website, type, size, setting
