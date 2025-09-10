@@ -154,15 +154,31 @@ export async function POST(req: NextRequest) {
       }
     })
   } catch (error: any) {
+    console.error('Error adding college to list:', {
+      error: error.message,
+      code: error.code,
+      meta: error.meta,
+      collegeId,
+      listType,
+      studentProfileId: studentProfile?.id
+    })
+    
     if (error.code === 'P2002') {
       return NextResponse.json(
         { error: 'College already in your list' },
         { status: 400 }
       )
     }
-    console.error('Error adding college to list:', error)
+    
+    if (error.code === 'P2003') {
+      return NextResponse.json(
+        { error: 'Invalid data: Please ensure the college and list type are valid' },
+        { status: 400 }
+      )
+    }
+    
     return NextResponse.json(
-      { error: 'Failed to add college to list' },
+      { error: `Failed to add college to list: ${error.message}` },
       { status: 500 }
     )
   } finally {

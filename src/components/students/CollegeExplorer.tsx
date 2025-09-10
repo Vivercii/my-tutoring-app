@@ -376,9 +376,14 @@ export default function CollegeExplorer({ studentId }: { studentId: string }) {
         setSelectedCollege(null)
         setNotes('')
         searchColleges()
+      } else {
+        const error = await response.json()
+        console.error('Error response:', response.status, error)
+        alert(error.error || 'Failed to add college to list')
       }
     } catch (error) {
       console.error('Error adding college:', error)
+      alert('Failed to add college to list. Please try again.')
     }
   }
 
