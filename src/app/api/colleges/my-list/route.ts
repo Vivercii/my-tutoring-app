@@ -10,12 +10,12 @@ export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session?.user || session.user.role !== 'STUDENT') {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get student profile
-    const studentProfile = await prisma.studentProfile.findUnique({
+    // Get or create student profile
+    let studentProfile = await prisma.studentProfile.findUnique({
       where: { studentId: session.user.id },
       include: {
         colleges: {
@@ -31,7 +31,20 @@ export async function GET(req: NextRequest) {
     })
 
     if (!studentProfile) {
-      return NextResponse.json({ error: 'Student profile not found' }, { status: 404 })
+      // Create profile if it doesn't exist
+      studentProfile = await prisma.studentProfile.create({
+        data: {
+          studentId: session.user.id,
+          program: 'ACADEMIC_SUPPORT'
+        },
+        include: {
+          colleges: {
+            include: {
+              college: true
+            }
+          }
+        }
+      })
     }
 
     // Return the colleges as an array with all necessary data
@@ -78,7 +91,7 @@ export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session?.user || session.user.role !== 'STUDENT') {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -92,13 +105,18 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Get student profile
-    const studentProfile = await prisma.studentProfile.findUnique({
+    // Get or create student profile
+    let studentProfile = await prisma.studentProfile.findUnique({
       where: { studentId: session.user.id }
     })
 
     if (!studentProfile) {
-      return NextResponse.json({ error: 'Student profile not found' }, { status: 404 })
+      studentProfile = await prisma.studentProfile.create({
+        data: {
+          studentId: session.user.id,
+          program: 'ACADEMIC_SUPPORT'
+        }
+      })
     }
 
     // Check if college exists
@@ -157,7 +175,7 @@ export async function PUT(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session?.user || session.user.role !== 'STUDENT') {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -171,13 +189,18 @@ export async function PUT(req: NextRequest) {
       )
     }
 
-    // Get student profile
-    const studentProfile = await prisma.studentProfile.findUnique({
+    // Get or create student profile
+    let studentProfile = await prisma.studentProfile.findUnique({
       where: { studentId: session.user.id }
     })
 
     if (!studentProfile) {
-      return NextResponse.json({ error: 'Student profile not found' }, { status: 404 })
+      studentProfile = await prisma.studentProfile.create({
+        data: {
+          studentId: session.user.id,
+          program: 'ACADEMIC_SUPPORT'
+        }
+      })
     }
 
     // Update college in student's list
@@ -228,7 +251,7 @@ export async function DELETE(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session?.user || session.user.role !== 'STUDENT') {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -242,13 +265,18 @@ export async function DELETE(req: NextRequest) {
       )
     }
 
-    // Get student profile
-    const studentProfile = await prisma.studentProfile.findUnique({
+    // Get or create student profile
+    let studentProfile = await prisma.studentProfile.findUnique({
       where: { studentId: session.user.id }
     })
 
     if (!studentProfile) {
-      return NextResponse.json({ error: 'Student profile not found' }, { status: 404 })
+      studentProfile = await prisma.studentProfile.create({
+        data: {
+          studentId: session.user.id,
+          program: 'ACADEMIC_SUPPORT'
+        }
+      })
     }
 
     // Remove college from student's list
