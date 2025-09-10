@@ -54,6 +54,19 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
+/**
+ * IMPORTANT: This interface must match the Prisma College model exactly!
+ * Before adding any fields here, ensure they exist in prisma/schema.prisma
+ * Always run 'npm run build' locally before pushing to verify TypeScript compatibility
+ * 
+ * Fields currently in database:
+ * - Basic: id, name, state, city, website, type, size, setting
+ * - Admissions: admissionRate, averageGPA
+ * - Test Scores: satTotalLow, satTotalHigh, actCompositeLow, actCompositeHigh
+ * - Costs: inStateTuition, outStateTuition, roomAndBoard, costOfAttendance, applicationFee
+ * - Financial Aid: financialAidPercentage
+ * - Other: ranking, totalEnrollment, isInMyList (computed)
+ */
 interface College {
   id: string
   name: string
@@ -70,6 +83,10 @@ interface College {
   actCompositeHigh?: number
   inStateTuition?: number
   outStateTuition?: number
+  roomAndBoard?: number
+  costOfAttendance?: number
+  applicationFee?: number
+  financialAidPercentage?: number
   ranking?: number
   totalEnrollment?: number
   averageGPA?: number
@@ -1016,12 +1033,16 @@ export default function CollegeExplorer({ studentId }: { studentId: string }) {
         )}
       </div>
 
-      {/* College Details Dialog */}
+      {/* College Details Dialog - with smooth fade/scale animation from center */}
       <Dialog open={detailsDialogOpen} onOpenChange={setDetailsDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-2xl">{selectedCollege?.name}</DialogTitle>
-            <DialogDescription>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto backdrop-blur-sm">
+          <DialogHeader className="pb-3 border-b">
+            <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+              <GraduationCap className="h-6 w-6 text-blue-600" />
+              {selectedCollege?.name}
+            </DialogTitle>
+            <DialogDescription className="flex items-center gap-2 mt-1">
+              <MapPin className="h-3 w-3" />
               {selectedCollege?.city}, {selectedCollege?.state}
             </DialogDescription>
           </DialogHeader>
@@ -1114,23 +1135,64 @@ export default function CollegeExplorer({ studentId }: { studentId: string }) {
                 </div>
               </div>
               
-              {/* Costs */}
+              {/* Costs & Financial Aid */}
               <div>
                 <h3 className="font-semibold mb-3">Costs & Financial Aid</h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
-                  {selectedCollege.inStateTuition && (
-                    <div>
-                      <span className="text-gray-500">In-State Tuition:</span>
-                      <span className="ml-2 font-medium">{formatTuition(selectedCollege.inStateTuition)}</span>
-                    </div>
-                  )}
-                  {selectedCollege.outStateTuition && (
-                    <div>
-                      <span className="text-gray-500">Out-of-State Tuition:</span>
-                      <span className="ml-2 font-medium">{formatTuition(selectedCollege.outStateTuition)}</span>
-                    </div>
-                  )}
+                  <div>
+                    <span className="text-gray-500">In-State Tuition:</span>
+                    <span className="ml-2 font-medium">
+                      {selectedCollege.inStateTuition 
+                        ? formatTuition(selectedCollege.inStateTuition)
+                        : 'Not available'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Out-of-State Tuition:</span>
+                    <span className="ml-2 font-medium">
+                      {selectedCollege.outStateTuition 
+                        ? formatTuition(selectedCollege.outStateTuition)
+                        : 'Not available'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Room & Board:</span>
+                    <span className="ml-2 font-medium">
+                      {selectedCollege.roomAndBoard 
+                        ? formatTuition(selectedCollege.roomAndBoard)
+                        : 'Not available'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Cost of Attendance:</span>
+                    <span className="ml-2 font-medium">
+                      {selectedCollege.costOfAttendance 
+                        ? formatTuition(selectedCollege.costOfAttendance)
+                        : 'Not available'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Application Fee:</span>
+                    <span className="ml-2 font-medium">
+                      {selectedCollege.applicationFee 
+                        ? `$${selectedCollege.applicationFee}`
+                        : 'Not available'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Students Receiving Aid:</span>
+                    <span className="ml-2 font-medium">
+                      {selectedCollege.financialAidPercentage 
+                        ? `${(selectedCollege.financialAidPercentage * 100).toFixed(0)}%`
+                        : 'Not available'}
+                    </span>
+                  </div>
                 </div>
+                {!selectedCollege.inStateTuition && !selectedCollege.outStateTuition && (
+                  <p className="text-sm text-gray-500 mt-3 italic">
+                    Financial information not available. Please visit the college website for current tuition and fees.
+                  </p>
+                )}
               </div>
               
               

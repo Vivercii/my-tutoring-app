@@ -607,6 +607,9 @@ model College {
   inStateTuition    Int?
   outStateTuition   Int?
   roomAndBoard      Int?
+  costOfAttendance  Int?              // Total yearly cost estimate
+  applicationFee    Int?              // Application fee
+  financialAidPercentage Float?       // Percentage of students receiving aid
   // Rankings and categorization
   ranking           Int?
   category          String?           // Ivy League, State School, Liberal Arts, etc.
