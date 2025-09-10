@@ -88,6 +88,9 @@ export async function GET(req: NextRequest) {
 
 // POST - Add college to list
 export async function POST(req: NextRequest) {
+  let studentProfile: any = null
+  let body: any = {}
+  
   try {
     const session = await getServerSession(authOptions)
     
@@ -95,7 +98,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await req.json()
+    body = await req.json()
     const { collegeId, listType, notes, applicationDeadline } = body
 
     if (!collegeId || !listType) {
@@ -106,7 +109,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Get or create student profile
-    let studentProfile = await prisma.studentProfile.findUnique({
+    studentProfile = await prisma.studentProfile.findUnique({
       where: { studentId: session.user.id }
     })
 
@@ -126,6 +129,48 @@ export async function POST(req: NextRequest) {
 
     if (!college) {
       return NextResponse.json({ error: 'College not found' }, { status: 404 })
+    }
+
+    // Check if college is already in student's list
+    const existingEntry = await prisma.studentCollege.findUnique({
+      where: {
+        studentProfileId_collegeId: {
+          studentProfileId: studentProfile.id,
+          collegeId: collegeId
+        }
+      }
+    })
+
+    if (existingEntry) {
+      // Update the existing entry instead of creating a new one
+      const updatedCollege = await prisma.studentCollege.update({
+        where: {
+          studentProfileId_collegeId: {
+            studentProfileId: studentProfile.id,
+            collegeId: collegeId
+          }
+        },
+        data: {
+          listType,
+          notes,
+          applicationDeadline: applicationDeadline ? new Date(applicationDeadline) : null
+        },
+        include: {
+          college: true
+        }
+      })
+
+      return NextResponse.json({
+        message: 'College updated in list',
+        college: {
+          id: updatedCollege.college.id,
+          name: updatedCollege.college.name,
+          city: updatedCollege.college.city,
+          state: updatedCollege.college.state,
+          listType: updatedCollege.listType,
+          status: updatedCollege.status
+        }
+      })
     }
 
     // Add college to student's list
@@ -158,8 +203,8 @@ export async function POST(req: NextRequest) {
       error: error.message,
       code: error.code,
       meta: error.meta,
-      collegeId,
-      listType,
+      collegeId: body.collegeId,
+      listType: body.listType,
       studentProfileId: studentProfile?.id
     })
     
