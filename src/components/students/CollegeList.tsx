@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import { debounce } from 'lodash'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -76,12 +77,15 @@ export default function CollegeList({ studentId }: { studentId: string }) {
     }
   }
 
-  const searchColleges = async () => {
-    if (!searchQuery.trim()) return
+  const searchColleges = async (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([])
+      return
+    }
     
     setSearching(true)
     try {
-      const response = await fetch(`/api/colleges/search?q=${encodeURIComponent(searchQuery)}`)
+      const response = await fetch(`/api/colleges/search?q=${encodeURIComponent(query)}`)
       if (response.ok) {
         const data = await response.json()
         // Extract colleges array from response
@@ -92,6 +96,21 @@ export default function CollegeList({ studentId }: { studentId: string }) {
     } finally {
       setSearching(false)
     }
+  }
+
+  // Create debounced search function
+  const debouncedSearch = useCallback(
+    debounce((query: string) => {
+      searchColleges(query)
+    }, 300),
+    []
+  )
+
+  // Handle search input change
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value
+    setSearchQuery(query)
+    debouncedSearch(query)
   }
 
   const addToList = async () => {
@@ -195,17 +214,18 @@ export default function CollegeList({ studentId }: { studentId: string }) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-2">
+          <div className="relative">
             <Input
               placeholder="Search by college name..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && searchColleges()}
-              className="flex-1"
+              onChange={handleSearchChange}
+              className="pr-20"
             />
-            <Button onClick={searchColleges} disabled={searching}>
-              {searching ? 'Searching...' : 'Search'}
-            </Button>
+            {searching && (
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">
+                Searching...
+              </span>
+            )}
           </div>
 
           {searchResults.length > 0 && (
@@ -230,7 +250,7 @@ export default function CollegeList({ studentId }: { studentId: string }) {
                           </span>
                         )}
                         {college.admissionRate && (
-                          <span>{(college.admissionRate * 100).toFixed(1)}% acceptance</span>
+                          <span>{college.admissionRate} acceptance</span>
                         )}
                         {college.ranking && (
                           <span>#{college.ranking} ranked</span>
@@ -447,7 +467,11 @@ function CollegeCard({
                 </div>
               )}
               {college.college.admissionRate && (
-                <div>{(college.college.admissionRate * 100).toFixed(1)}% acceptance</div>
+                <div>
+                  {typeof college.college.admissionRate === 'number' 
+                    ? `${(college.college.admissionRate * 100).toFixed(1)}% acceptance`
+                    : `${college.college.admissionRate} acceptance`}
+                </div>
               )}
               {college.college.ranking && (
                 <div>#{college.college.ranking} ranked</div>
