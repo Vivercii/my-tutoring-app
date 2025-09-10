@@ -169,9 +169,9 @@ export default function CollegeList({ studentId }: { studentId: string }) {
     }
   }
 
-  const dreamColleges = colleges.filter(c => c.listType === 'DREAM')
-  const targetColleges = colleges.filter(c => c.listType === 'TARGET')
-  const safetyColleges = colleges.filter(c => c.listType === 'SAFETY')
+  const dreamColleges = Array.isArray(colleges) ? colleges.filter(c => c.listType === 'DREAM') : []
+  const targetColleges = Array.isArray(colleges) ? colleges.filter(c => c.listType === 'TARGET') : []
+  const safetyColleges = Array.isArray(colleges) ? colleges.filter(c => c.listType === 'SAFETY') : []
 
   if (loading) {
     return (
@@ -263,14 +263,14 @@ export default function CollegeList({ studentId }: { studentId: string }) {
       {/* College Lists */}
       <Tabs defaultValue="all" className="w-full">
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="all">All ({colleges.length})</TabsTrigger>
+          <TabsTrigger value="all">All ({Array.isArray(colleges) ? colleges.length : 0})</TabsTrigger>
           <TabsTrigger value="dream">Dream ({dreamColleges.length})</TabsTrigger>
           <TabsTrigger value="target">Target ({targetColleges.length})</TabsTrigger>
           <TabsTrigger value="safety">Safety ({safetyColleges.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="all" className="space-y-4">
-          {colleges.length === 0 ? (
+          {!Array.isArray(colleges) || colleges.length === 0 ? (
             <Card>
               <CardContent className="text-center py-8">
                 <School className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -280,7 +280,7 @@ export default function CollegeList({ studentId }: { studentId: string }) {
             </Card>
           ) : (
             <div className="grid gap-4">
-              {colleges.map((item) => (
+              {Array.isArray(colleges) && colleges.map((item) => (
                 <CollegeCard
                   key={item.id}
                   college={item}
