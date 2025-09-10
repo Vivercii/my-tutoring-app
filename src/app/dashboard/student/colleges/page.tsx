@@ -7,7 +7,7 @@ import { ArrowLeft, GraduationCap, Search, BookOpen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import CollegeList from '@/components/students/CollegeList'
-import CollegeSearch from '@/components/students/CollegeSearch'
+import CollegeExplorer from '@/components/students/CollegeExplorer'
 
 export default function CollegesPage() {
   const { data: session } = useSession()
@@ -72,7 +72,7 @@ export default function CollegesPage() {
           </TabsList>
           
           <TabsContent value="search" className="mt-6">
-            <CollegeSearch studentId={session.user.id} />
+            <CollegeExplorer studentId={session.user.id} />
           </TabsContent>
           
           <TabsContent value="my-list" className="mt-6">
