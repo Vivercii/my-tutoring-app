@@ -1078,10 +1078,10 @@ export default function CollegeExplorer({ studentId }: { studentId: string }) {
                       <span className="ml-2 font-medium">{selectedCollege.totalEnrollment.toLocaleString()}</span>
                     </div>
                   )}
-                  {selectedCollege.undergraduateEnrollment && (
+                  {selectedCollege.undergradEnrollment && (
                     <div>
                       <span className="text-gray-500">Undergrad Enrollment:</span>
-                      <span className="ml-2 font-medium">{selectedCollege.undergraduateEnrollment.toLocaleString()}</span>
+                      <span className="ml-2 font-medium">{selectedCollege.undergradEnrollment.toLocaleString()}</span>
                     </div>
                   )}
                 </div>
@@ -1098,14 +1098,6 @@ export default function CollegeExplorer({ studentId }: { studentId: string }) {
                         {typeof selectedCollege.admissionRate === 'string' 
                           ? selectedCollege.admissionRate 
                           : `${(selectedCollege.admissionRate * 100).toFixed(0)}%`}
-                      </span>
-                    </div>
-                  )}
-                  {selectedCollege.earlyAdmissionRate && (
-                    <div>
-                      <span className="text-gray-500">Early Admission Rate:</span>
-                      <span className="ml-2 font-medium">
-                        {(selectedCollege.earlyAdmissionRate * 100).toFixed(0)}%
                       </span>
                     </div>
                   )}
@@ -1166,103 +1158,26 @@ export default function CollegeExplorer({ studentId }: { studentId: string }) {
                       <span className="ml-2 font-medium">{formatTuition(selectedCollege.roomAndBoard)}</span>
                     </div>
                   )}
-                  {selectedCollege.averageNetPrice && (
-                    <div>
-                      <span className="text-gray-500">Average Net Price:</span>
-                      <span className="ml-2 font-medium">{formatTuition(selectedCollege.averageNetPrice)}</span>
-                    </div>
-                  )}
-                  {selectedCollege.averageAid && (
-                    <div>
-                      <span className="text-gray-500">Average Financial Aid:</span>
-                      <span className="ml-2 font-medium">{formatTuition(selectedCollege.averageAid)}</span>
-                    </div>
-                  )}
-                  {selectedCollege.percentReceivingAid && (
-                    <div>
-                      <span className="text-gray-500">% Receiving Aid:</span>
-                      <span className="ml-2 font-medium">
-                        {(selectedCollege.percentReceivingAid * 100).toFixed(0)}%
-                      </span>
-                    </div>
-                  )}
                 </div>
               </div>
               
-              {/* Outcomes */}
-              <div>
-                <h3 className="font-semibold mb-3">Student Outcomes</h3>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  {selectedCollege.graduationRate && (
-                    <div>
-                      <span className="text-gray-500">Graduation Rate:</span>
-                      <span className="ml-2 font-medium">
-                        {(selectedCollege.graduationRate * 100).toFixed(0)}%
-                      </span>
-                    </div>
-                  )}
-                  {selectedCollege.retentionRate && (
-                    <div>
-                      <span className="text-gray-500">Retention Rate:</span>
-                      <span className="ml-2 font-medium">
-                        {(selectedCollege.retentionRate * 100).toFixed(0)}%
-                      </span>
-                    </div>
-                  )}
-                  {selectedCollege.medianEarnings && (
-                    <div>
-                      <span className="text-gray-500">Median Earnings:</span>
-                      <span className="ml-2 font-medium">
-                        ${selectedCollege.medianEarnings.toLocaleString()}
-                      </span>
-                    </div>
-                  )}
-                  {selectedCollege.employmentRate && (
-                    <div>
-                      <span className="text-gray-500">Employment Rate:</span>
-                      <span className="ml-2 font-medium">
-                        {(selectedCollege.employmentRate * 100).toFixed(0)}%
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
               
               {/* Contact Info */}
-              {(selectedCollege.website || selectedCollege.admissionsEmail || selectedCollege.admissionsPhone) && (
+              {selectedCollege.website && (
                 <div>
                   <h3 className="font-semibold mb-3">Contact Information</h3>
                   <div className="space-y-2 text-sm">
-                    {selectedCollege.website && (
-                      <div>
-                        <span className="text-gray-500">Website:</span>
-                        <a 
-                          href={selectedCollege.website.startsWith('http') ? selectedCollege.website : `https://${selectedCollege.website}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="ml-2 text-blue-600 hover:underline"
-                        >
-                          {selectedCollege.website}
-                        </a>
-                      </div>
-                    )}
-                    {selectedCollege.admissionsEmail && (
-                      <div>
-                        <span className="text-gray-500">Admissions Email:</span>
-                        <a 
-                          href={`mailto:${selectedCollege.admissionsEmail}`}
-                          className="ml-2 text-blue-600 hover:underline"
-                        >
-                          {selectedCollege.admissionsEmail}
-                        </a>
-                      </div>
-                    )}
-                    {selectedCollege.admissionsPhone && (
-                      <div>
-                        <span className="text-gray-500">Admissions Phone:</span>
-                        <span className="ml-2">{selectedCollege.admissionsPhone}</span>
-                      </div>
-                    )}
+                    <div>
+                      <span className="text-gray-500">Website:</span>
+                      <a 
+                        href={selectedCollege.website.startsWith('http') ? selectedCollege.website : `https://${selectedCollege.website}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="ml-2 text-blue-600 hover:underline"
+                      >
+                        {selectedCollege.website}
+                      </a>
+                    </div>
                   </div>
                 </div>
               )}
