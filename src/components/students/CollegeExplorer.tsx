@@ -1078,12 +1078,6 @@ export default function CollegeExplorer({ studentId }: { studentId: string }) {
                       <span className="ml-2 font-medium">{selectedCollege.totalEnrollment.toLocaleString()}</span>
                     </div>
                   )}
-                  {selectedCollege.undergradEnrollment && (
-                    <div>
-                      <span className="text-gray-500">Undergrad Enrollment:</span>
-                      <span className="ml-2 font-medium">{selectedCollege.undergradEnrollment.toLocaleString()}</span>
-                    </div>
-                  )}
                 </div>
               </div>
               
