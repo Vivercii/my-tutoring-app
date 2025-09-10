@@ -39,7 +39,7 @@ import {
   Info,
   ChevronDown
 } from 'lucide-react'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
 import { Progress } from '@/components/ui/progress'
 import {
@@ -154,11 +154,13 @@ export default function CollegeExplorer({ studentId }: { studentId: string }) {
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedCollege, setSelectedCollege] = useState<College | null>(null)
   const [addDialogOpen, setAddDialogOpen] = useState(false)
+  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false)
   const [listType, setListType] = useState<'DREAM' | 'TARGET' | 'SAFETY'>('TARGET')
   const [notes, setNotes] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list')
   const [sortBy, setSortBy] = useState('name')
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
+  const [savedColleges, setSavedColleges] = useState<Set<string>>(new Set())
   
   // Student profile for match calculation
   const [studentProfile] = useState<StudentProfile>({
@@ -343,6 +345,59 @@ export default function CollegeExplorer({ studentId }: { studentId: string }) {
     } catch (error) {
       console.error('Error adding college:', error)
     }
+  }
+
+  // Toggle save college
+  const toggleSaveCollege = async (collegeId: string) => {
+    const isSaved = savedColleges.has(collegeId)
+    
+    try {
+      const response = await fetch('/api/colleges/saved', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          collegeId,
+          action: isSaved ? 'unsave' : 'save'
+        })
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        const newSaved = new Set(savedColleges)
+        if (result.saved) {
+          newSaved.add(collegeId)
+        } else {
+          newSaved.delete(collegeId)
+        }
+        setSavedColleges(newSaved)
+      }
+    } catch (error) {
+      console.error('Error saving college:', error)
+    }
+  }
+
+  // Load saved colleges from database on mount
+  useEffect(() => {
+    const fetchSavedColleges = async () => {
+      try {
+        const response = await fetch('/api/colleges/saved')
+        if (response.ok) {
+          const data = await response.json()
+          const savedIds = data.savedColleges.map((college: College) => college.id)
+          setSavedColleges(new Set(savedIds))
+        }
+      } catch (error) {
+        console.error('Error fetching saved colleges:', error)
+      }
+    }
+    
+    fetchSavedColleges()
+  }, [])
+
+  // Show college details
+  const showCollegeDetails = (college: College) => {
+    setSelectedCollege(college)
+    setDetailsDialogOpen(true)
   }
 
   // Format helpers
@@ -813,11 +868,21 @@ export default function CollegeExplorer({ studentId }: { studentId: string }) {
                               Add to List
                             </Button>
                           )}
-                          <Button size="sm" variant="ghost">
-                            <Heart className="h-3 w-3 mr-1" />
-                            Save
+                          <Button 
+                            size="sm" 
+                            variant="ghost"
+                            onClick={() => toggleSaveCollege(college.id)}
+                          >
+                            <Heart 
+                              className={`h-3 w-3 mr-1 ${savedColleges.has(college.id) ? 'fill-red-500 text-red-500' : ''}`} 
+                            />
+                            {savedColleges.has(college.id) ? 'Saved' : 'Save'}
                           </Button>
-                          <Button size="sm" variant="ghost">
+                          <Button 
+                            size="sm" 
+                            variant="ghost"
+                            onClick={() => showCollegeDetails(college)}
+                          >
                             <Info className="h-3 w-3 mr-1" />
                             Details
                           </Button>
@@ -877,18 +942,44 @@ export default function CollegeExplorer({ studentId }: { studentId: string }) {
                       )}
                     </div>
                     
-                    <div className="mt-3 pt-3 border-t flex justify-between items-center">
-                      {getMatchBadge(matchType)}
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => {
-                          setSelectedCollege(college)
-                          setAddDialogOpen(true)
-                        }}
-                      >
-                        <Plus className="h-3 w-3" />
-                      </Button>
+                    <div className="mt-3 pt-3 border-t">
+                      <div className="flex justify-between items-center mb-2">
+                        {getMatchBadge(matchType)}
+                      </div>
+                      <div className="flex gap-1">
+                        <Button 
+                          size="icon" 
+                          variant="ghost" 
+                          className="h-8 w-8 flex-1"
+                          onClick={() => toggleSaveCollege(college.id)}
+                          title="Save college"
+                        >
+                          <Heart 
+                            className={`h-4 w-4 ${savedColleges.has(college.id) ? 'fill-red-500 text-red-500' : ''}`} 
+                          />
+                        </Button>
+                        <Button 
+                          size="icon" 
+                          variant="ghost" 
+                          className="h-8 w-8 flex-1"
+                          onClick={() => showCollegeDetails(college)}
+                          title="View details"
+                        >
+                          <Info className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-8 w-8 flex-1"
+                          onClick={() => {
+                            setSelectedCollege(college)
+                            setAddDialogOpen(true)
+                          }}
+                          title="Add to list"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -924,6 +1015,288 @@ export default function CollegeExplorer({ studentId }: { studentId: string }) {
           </div>
         )}
       </div>
+
+      {/* College Details Dialog */}
+      <Dialog open={detailsDialogOpen} onOpenChange={setDetailsDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">{selectedCollege?.name}</DialogTitle>
+            <DialogDescription>
+              {selectedCollege?.city}, {selectedCollege?.state}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedCollege && (
+            <div className="space-y-6 mt-4">
+              {/* Match Score */}
+              <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold text-lg">Match Score</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Based on your profile</p>
+                  </div>
+                  <div className="text-3xl font-bold text-blue-600">
+                    {calculateMatchScore(selectedCollege)}%
+                  </div>
+                </div>
+                <div className="mt-2">
+                  {getMatchBadge(getMatchType(selectedCollege))}
+                </div>
+              </div>
+              
+              {/* Basic Info */}
+              <div>
+                <h3 className="font-semibold mb-3">Basic Information</h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  {selectedCollege.ranking && (
+                    <div>
+                      <span className="text-gray-500">Ranking:</span>
+                      <span className="ml-2 font-medium">#{selectedCollege.ranking}</span>
+                    </div>
+                  )}
+                  {selectedCollege.type && (
+                    <div>
+                      <span className="text-gray-500">Type:</span>
+                      <span className="ml-2 font-medium">{selectedCollege.type}</span>
+                    </div>
+                  )}
+                  {selectedCollege.size && (
+                    <div>
+                      <span className="text-gray-500">Size:</span>
+                      <span className="ml-2 font-medium">{selectedCollege.size}</span>
+                    </div>
+                  )}
+                  {selectedCollege.setting && (
+                    <div>
+                      <span className="text-gray-500">Setting:</span>
+                      <span className="ml-2 font-medium">{selectedCollege.setting}</span>
+                    </div>
+                  )}
+                  {selectedCollege.totalEnrollment && (
+                    <div>
+                      <span className="text-gray-500">Total Enrollment:</span>
+                      <span className="ml-2 font-medium">{selectedCollege.totalEnrollment.toLocaleString()}</span>
+                    </div>
+                  )}
+                  {selectedCollege.undergraduateEnrollment && (
+                    <div>
+                      <span className="text-gray-500">Undergrad Enrollment:</span>
+                      <span className="ml-2 font-medium">{selectedCollege.undergraduateEnrollment.toLocaleString()}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* Admissions */}
+              <div>
+                <h3 className="font-semibold mb-3">Admissions</h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  {selectedCollege.admissionRate && (
+                    <div>
+                      <span className="text-gray-500">Acceptance Rate:</span>
+                      <span className={`ml-2 font-medium ${getAcceptanceColor(selectedCollege.admissionRate)}`}>
+                        {typeof selectedCollege.admissionRate === 'string' 
+                          ? selectedCollege.admissionRate 
+                          : `${(selectedCollege.admissionRate * 100).toFixed(0)}%`}
+                      </span>
+                    </div>
+                  )}
+                  {selectedCollege.earlyAdmissionRate && (
+                    <div>
+                      <span className="text-gray-500">Early Admission Rate:</span>
+                      <span className="ml-2 font-medium">
+                        {(selectedCollege.earlyAdmissionRate * 100).toFixed(0)}%
+                      </span>
+                    </div>
+                  )}
+                  {selectedCollege.satTotalLow && selectedCollege.satTotalHigh && (
+                    <div>
+                      <span className="text-gray-500">SAT Range:</span>
+                      <span className="ml-2 font-medium">
+                        {selectedCollege.satTotalLow}-{selectedCollege.satTotalHigh}
+                      </span>
+                    </div>
+                  )}
+                  {selectedCollege.satMathLow && selectedCollege.satMathHigh && (
+                    <div>
+                      <span className="text-gray-500">SAT Math:</span>
+                      <span className="ml-2 font-medium">
+                        {selectedCollege.satMathLow}-{selectedCollege.satMathHigh}
+                      </span>
+                    </div>
+                  )}
+                  {selectedCollege.satReadingLow && selectedCollege.satReadingHigh && (
+                    <div>
+                      <span className="text-gray-500">SAT Reading:</span>
+                      <span className="ml-2 font-medium">
+                        {selectedCollege.satReadingLow}-{selectedCollege.satReadingHigh}
+                      </span>
+                    </div>
+                  )}
+                  {selectedCollege.actCompositeLow && selectedCollege.actCompositeHigh && (
+                    <div>
+                      <span className="text-gray-500">ACT Composite:</span>
+                      <span className="ml-2 font-medium">
+                        {selectedCollege.actCompositeLow}-{selectedCollege.actCompositeHigh}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* Costs */}
+              <div>
+                <h3 className="font-semibold mb-3">Costs & Financial Aid</h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  {selectedCollege.inStateTuition && (
+                    <div>
+                      <span className="text-gray-500">In-State Tuition:</span>
+                      <span className="ml-2 font-medium">{formatTuition(selectedCollege.inStateTuition)}</span>
+                    </div>
+                  )}
+                  {selectedCollege.outOfStateTuition && (
+                    <div>
+                      <span className="text-gray-500">Out-of-State Tuition:</span>
+                      <span className="ml-2 font-medium">{formatTuition(selectedCollege.outOfStateTuition)}</span>
+                    </div>
+                  )}
+                  {selectedCollege.roomAndBoard && (
+                    <div>
+                      <span className="text-gray-500">Room & Board:</span>
+                      <span className="ml-2 font-medium">{formatTuition(selectedCollege.roomAndBoard)}</span>
+                    </div>
+                  )}
+                  {selectedCollege.averageNetPrice && (
+                    <div>
+                      <span className="text-gray-500">Average Net Price:</span>
+                      <span className="ml-2 font-medium">{formatTuition(selectedCollege.averageNetPrice)}</span>
+                    </div>
+                  )}
+                  {selectedCollege.averageAid && (
+                    <div>
+                      <span className="text-gray-500">Average Financial Aid:</span>
+                      <span className="ml-2 font-medium">{formatTuition(selectedCollege.averageAid)}</span>
+                    </div>
+                  )}
+                  {selectedCollege.percentReceivingAid && (
+                    <div>
+                      <span className="text-gray-500">% Receiving Aid:</span>
+                      <span className="ml-2 font-medium">
+                        {(selectedCollege.percentReceivingAid * 100).toFixed(0)}%
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* Outcomes */}
+              <div>
+                <h3 className="font-semibold mb-3">Student Outcomes</h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  {selectedCollege.graduationRate && (
+                    <div>
+                      <span className="text-gray-500">Graduation Rate:</span>
+                      <span className="ml-2 font-medium">
+                        {(selectedCollege.graduationRate * 100).toFixed(0)}%
+                      </span>
+                    </div>
+                  )}
+                  {selectedCollege.retentionRate && (
+                    <div>
+                      <span className="text-gray-500">Retention Rate:</span>
+                      <span className="ml-2 font-medium">
+                        {(selectedCollege.retentionRate * 100).toFixed(0)}%
+                      </span>
+                    </div>
+                  )}
+                  {selectedCollege.medianEarnings && (
+                    <div>
+                      <span className="text-gray-500">Median Earnings:</span>
+                      <span className="ml-2 font-medium">
+                        ${selectedCollege.medianEarnings.toLocaleString()}
+                      </span>
+                    </div>
+                  )}
+                  {selectedCollege.employmentRate && (
+                    <div>
+                      <span className="text-gray-500">Employment Rate:</span>
+                      <span className="ml-2 font-medium">
+                        {(selectedCollege.employmentRate * 100).toFixed(0)}%
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* Contact Info */}
+              {(selectedCollege.website || selectedCollege.admissionsEmail || selectedCollege.admissionsPhone) && (
+                <div>
+                  <h3 className="font-semibold mb-3">Contact Information</h3>
+                  <div className="space-y-2 text-sm">
+                    {selectedCollege.website && (
+                      <div>
+                        <span className="text-gray-500">Website:</span>
+                        <a 
+                          href={selectedCollege.website.startsWith('http') ? selectedCollege.website : `https://${selectedCollege.website}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="ml-2 text-blue-600 hover:underline"
+                        >
+                          {selectedCollege.website}
+                        </a>
+                      </div>
+                    )}
+                    {selectedCollege.admissionsEmail && (
+                      <div>
+                        <span className="text-gray-500">Admissions Email:</span>
+                        <a 
+                          href={`mailto:${selectedCollege.admissionsEmail}`}
+                          className="ml-2 text-blue-600 hover:underline"
+                        >
+                          {selectedCollege.admissionsEmail}
+                        </a>
+                      </div>
+                    )}
+                    {selectedCollege.admissionsPhone && (
+                      <div>
+                        <span className="text-gray-500">Admissions Phone:</span>
+                        <span className="ml-2">{selectedCollege.admissionsPhone}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          
+          <DialogFooter className="mt-6">
+            <div className="flex gap-2 w-full">
+              <Button
+                variant="outline"
+                onClick={() => toggleSaveCollege(selectedCollege?.id || '')}
+                className="flex-1"
+              >
+                <Heart 
+                  className={`h-4 w-4 mr-2 ${selectedCollege && savedColleges.has(selectedCollege.id) ? 'fill-red-500 text-red-500' : ''}`} 
+                />
+                {selectedCollege && savedColleges.has(selectedCollege.id) ? 'Saved' : 'Save College'}
+              </Button>
+              {selectedCollege && !selectedCollege.isInMyList && (
+                <Button
+                  onClick={() => {
+                    setDetailsDialogOpen(false)
+                    setAddDialogOpen(true)
+                  }}
+                  className="flex-1"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add to My List
+                </Button>
+              )}
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Add to List Dialog */}
       <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>

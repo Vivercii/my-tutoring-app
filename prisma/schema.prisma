@@ -47,6 +47,7 @@ model User {
   tutorProfile      TutorProfile?       @relation("TutorProfile")
   tutors            TutorStudent[]      @relation("StudentTutors")
   taughtStudents    TutorStudent[]      @relation("TutorStudents")
+  savedColleges     SavedCollege[]
 }
 
 model StudentProfile {
@@ -616,12 +617,26 @@ model College {
   updatedAt         DateTime          @updatedAt
   
   students          StudentCollege[]  // Students who have this college on their list
+  savedBy           SavedCollege[]    // Users who have saved this college
   
   @@index([searchName])
   @@index([state])
   @@index([admissionRate])
   @@index([satTotalLow, satTotalHigh])
   @@index([actCompositeLow, actCompositeHigh])
+}
+
+model SavedCollege {
+  id        String   @id @default(cuid())
+  studentId String
+  collegeId String
+  createdAt DateTime @default(now())
+  student   User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  college   College  @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+  
+  @@unique([studentId, collegeId])
+  @@index([studentId])
+  @@index([collegeId])
 }
 
 model StudentCollege {
