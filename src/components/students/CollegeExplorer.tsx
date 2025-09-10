@@ -1124,10 +1124,10 @@ export default function CollegeExplorer({ studentId }: { studentId: string }) {
                       <span className="ml-2 font-medium">{formatTuition(selectedCollege.inStateTuition)}</span>
                     </div>
                   )}
-                  {selectedCollege.outOfStateTuition && (
+                  {selectedCollege.outStateTuition && (
                     <div>
                       <span className="text-gray-500">Out-of-State Tuition:</span>
-                      <span className="ml-2 font-medium">{formatTuition(selectedCollege.outOfStateTuition)}</span>
+                      <span className="ml-2 font-medium">{formatTuition(selectedCollege.outStateTuition)}</span>
                     </div>
                   )}
                 </div>
