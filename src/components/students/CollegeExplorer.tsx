@@ -1065,135 +1065,131 @@ export default function CollegeExplorer({ studentId }: { studentId: string }) {
                 </div>
               </div>
               
-              {/* Basic Info */}
-              <div>
-                <h3 className="font-semibold mb-3">Basic Information</h3>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  {selectedCollege.ranking && (
-                    <div>
-                      <span className="text-gray-500">Ranking:</span>
-                      <span className="ml-2 font-medium">#{selectedCollege.ranking}</span>
-                    </div>
-                  )}
-                  {selectedCollege.type && (
-                    <div>
-                      <span className="text-gray-500">Type:</span>
-                      <span className="ml-2 font-medium">{selectedCollege.type}</span>
-                    </div>
-                  )}
-                  {selectedCollege.size && (
-                    <div>
-                      <span className="text-gray-500">Size:</span>
-                      <span className="ml-2 font-medium">{selectedCollege.size}</span>
-                    </div>
-                  )}
-                  {selectedCollege.setting && (
-                    <div>
-                      <span className="text-gray-500">Setting:</span>
-                      <span className="ml-2 font-medium">{selectedCollege.setting}</span>
-                    </div>
-                  )}
-                  {selectedCollege.totalEnrollment && (
-                    <div>
-                      <span className="text-gray-500">Total Enrollment:</span>
-                      <span className="ml-2 font-medium">{selectedCollege.totalEnrollment.toLocaleString()}</span>
-                    </div>
-                  )}
+              {/* Basic Info - Only show if data exists */}
+              {(selectedCollege.ranking || selectedCollege.type || selectedCollege.size || 
+                selectedCollege.setting || selectedCollege.totalEnrollment) && (
+                <div>
+                  <h3 className="font-semibold mb-3">Basic Information</h3>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    {selectedCollege.ranking && (
+                      <div>
+                        <span className="text-gray-500">Ranking:</span>
+                        <span className="ml-2 font-medium">#{selectedCollege.ranking}</span>
+                      </div>
+                    )}
+                    {selectedCollege.type && (
+                      <div>
+                        <span className="text-gray-500">Type:</span>
+                        <span className="ml-2 font-medium">{selectedCollege.type}</span>
+                      </div>
+                    )}
+                    {selectedCollege.size && (
+                      <div>
+                        <span className="text-gray-500">Size:</span>
+                        <span className="ml-2 font-medium">{selectedCollege.size}</span>
+                      </div>
+                    )}
+                    {selectedCollege.setting && (
+                      <div>
+                        <span className="text-gray-500">Setting:</span>
+                        <span className="ml-2 font-medium">{selectedCollege.setting}</span>
+                      </div>
+                    )}
+                    {selectedCollege.totalEnrollment && (
+                      <div>
+                        <span className="text-gray-500">Total Enrollment:</span>
+                        <span className="ml-2 font-medium">{selectedCollege.totalEnrollment.toLocaleString()}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
               
-              {/* Admissions */}
-              <div>
-                <h3 className="font-semibold mb-3">Admissions</h3>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  {selectedCollege.admissionRate && (
-                    <div>
-                      <span className="text-gray-500">Acceptance Rate:</span>
-                      <span className={`ml-2 font-medium ${getAcceptanceColor(selectedCollege.admissionRate)}`}>
-                        {typeof selectedCollege.admissionRate === 'string' 
-                          ? selectedCollege.admissionRate 
-                          : `${(selectedCollege.admissionRate * 100).toFixed(0)}%`}
-                      </span>
-                    </div>
-                  )}
-                  {selectedCollege.satTotalLow && selectedCollege.satTotalHigh && (
-                    <div>
-                      <span className="text-gray-500">SAT Range:</span>
-                      <span className="ml-2 font-medium">
-                        {selectedCollege.satTotalLow}-{selectedCollege.satTotalHigh}
-                      </span>
-                    </div>
-                  )}
-                  {selectedCollege.actCompositeLow && selectedCollege.actCompositeHigh && (
-                    <div>
-                      <span className="text-gray-500">ACT Composite:</span>
-                      <span className="ml-2 font-medium">
-                        {selectedCollege.actCompositeLow}-{selectedCollege.actCompositeHigh}
-                      </span>
-                    </div>
-                  )}
+              {/* Admissions - Only show if data exists */}
+              {(selectedCollege.admissionRate || 
+                (selectedCollege.satTotalLow && selectedCollege.satTotalHigh) ||
+                (selectedCollege.actCompositeLow && selectedCollege.actCompositeHigh)) && (
+                <div>
+                  <h3 className="font-semibold mb-3">Admissions</h3>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    {selectedCollege.admissionRate && (
+                      <div>
+                        <span className="text-gray-500">Acceptance Rate:</span>
+                        <span className={`ml-2 font-medium ${getAcceptanceColor(selectedCollege.admissionRate)}`}>
+                          {typeof selectedCollege.admissionRate === 'string' 
+                            ? selectedCollege.admissionRate 
+                            : `${(selectedCollege.admissionRate * 100).toFixed(0)}%`}
+                        </span>
+                      </div>
+                    )}
+                    {selectedCollege.satTotalLow && selectedCollege.satTotalHigh && (
+                      <div>
+                        <span className="text-gray-500">SAT Range:</span>
+                        <span className="ml-2 font-medium">
+                          {selectedCollege.satTotalLow}-{selectedCollege.satTotalHigh}
+                        </span>
+                      </div>
+                    )}
+                    {selectedCollege.actCompositeLow && selectedCollege.actCompositeHigh && (
+                      <div>
+                        <span className="text-gray-500">ACT Composite:</span>
+                        <span className="ml-2 font-medium">
+                          {selectedCollege.actCompositeLow}-{selectedCollege.actCompositeHigh}
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
               
-              {/* Costs & Financial Aid */}
-              <div>
-                <h3 className="font-semibold mb-3">Costs & Financial Aid</h3>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-gray-500">In-State Tuition:</span>
-                    <span className="ml-2 font-medium">
-                      {selectedCollege.inStateTuition 
-                        ? formatTuition(selectedCollege.inStateTuition)
-                        : 'Not available'}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">Out-of-State Tuition:</span>
-                    <span className="ml-2 font-medium">
-                      {selectedCollege.outStateTuition 
-                        ? formatTuition(selectedCollege.outStateTuition)
-                        : 'Not available'}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">Room & Board:</span>
-                    <span className="ml-2 font-medium">
-                      {selectedCollege.roomAndBoard 
-                        ? formatTuition(selectedCollege.roomAndBoard)
-                        : 'Not available'}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">Cost of Attendance:</span>
-                    <span className="ml-2 font-medium">
-                      {selectedCollege.costOfAttendance 
-                        ? formatTuition(selectedCollege.costOfAttendance)
-                        : 'Not available'}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">Application Fee:</span>
-                    <span className="ml-2 font-medium">
-                      {selectedCollege.applicationFee 
-                        ? `$${selectedCollege.applicationFee}`
-                        : 'Not available'}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">Students Receiving Aid:</span>
-                    <span className="ml-2 font-medium">
-                      {selectedCollege.financialAidPercentage 
-                        ? `${(selectedCollege.financialAidPercentage * 100).toFixed(0)}%`
-                        : 'Not available'}
-                    </span>
+              {/* Costs & Financial Aid - Only show if data exists */}
+              {(selectedCollege.inStateTuition || selectedCollege.outStateTuition || 
+                selectedCollege.roomAndBoard || selectedCollege.costOfAttendance || 
+                selectedCollege.applicationFee || selectedCollege.financialAidPercentage) && (
+                <div>
+                  <h3 className="font-semibold mb-3">Costs & Financial Aid</h3>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    {selectedCollege.inStateTuition && (
+                      <div>
+                        <span className="text-gray-500">In-State Tuition:</span>
+                        <span className="ml-2 font-medium">{formatTuition(selectedCollege.inStateTuition)}</span>
+                      </div>
+                    )}
+                    {selectedCollege.outStateTuition && (
+                      <div>
+                        <span className="text-gray-500">Out-of-State Tuition:</span>
+                        <span className="ml-2 font-medium">{formatTuition(selectedCollege.outStateTuition)}</span>
+                      </div>
+                    )}
+                    {selectedCollege.roomAndBoard && (
+                      <div>
+                        <span className="text-gray-500">Room & Board:</span>
+                        <span className="ml-2 font-medium">{formatTuition(selectedCollege.roomAndBoard)}</span>
+                      </div>
+                    )}
+                    {selectedCollege.costOfAttendance && (
+                      <div>
+                        <span className="text-gray-500">Cost of Attendance:</span>
+                        <span className="ml-2 font-medium">{formatTuition(selectedCollege.costOfAttendance)}</span>
+                      </div>
+                    )}
+                    {selectedCollege.applicationFee && (
+                      <div>
+                        <span className="text-gray-500">Application Fee:</span>
+                        <span className="ml-2 font-medium">${selectedCollege.applicationFee}</span>
+                      </div>
+                    )}
+                    {selectedCollege.financialAidPercentage && (
+                      <div>
+                        <span className="text-gray-500">Students Receiving Aid:</span>
+                        <span className="ml-2 font-medium">
+                          {(selectedCollege.financialAidPercentage * 100).toFixed(0)}%
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
-                {!selectedCollege.inStateTuition && !selectedCollege.outStateTuition && (
-                  <p className="text-sm text-gray-500 mt-3 italic">
-                    Financial information not available. Please visit the college website for current tuition and fees.
-                  </p>
-                )}
-              </div>
+              )}
               
               
               {/* Contact Info */}
